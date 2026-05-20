@@ -1,0 +1,40 @@
+# --- Third-party dependency (cloned separately, see README) ---
+# icu-sepsis is a clone of https://github.com/icu-sepsis/icu-sepsis
+# It carries its own .git + large binaries; install it via pip instead.
+icu-sepsis/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.installed.cfg
+
+# --- Testing / caches ---
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+
+# --- Local scratch (uncomment if you don't want to publish run logs) ---
+# logs/

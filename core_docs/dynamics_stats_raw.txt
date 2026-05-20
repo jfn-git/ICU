@@ -1,0 +1,123 @@
+{
+  "num_states": 716,
+  "num_actions": 25,
+  "max_episode_steps": 500,
+  "terminal_states": [
+    713,
+    714,
+    715
+  ],
+  "terminal_state_meanings": {
+    "713": "death (absorbing, reward 0 on entry)",
+    "714": "survival (absorbing, reward +1 on entry)",
+    "715": "s_inf (absorbing)"
+  },
+  "admissible_per_state_all": {
+    "min": 1,
+    "median": 4.0,
+    "max": 25,
+    "mean": 3.2304469273743015
+  },
+  "admissible_per_state_nonterminal": {
+    "min": 1,
+    "median": 4.0,
+    "max": 13,
+    "mean": 3.1388499298737726
+  },
+  "frac_admissible_cells_all": 0.12921787709497207,
+  "frac_admissible_cells_nonterminal": 0.12555399719495092,
+  "admissible_count_histogram_nonterminal": {
+    "[0,1)": 0,
+    "[1,5)": 626,
+    "[5,10)": 80,
+    "[10,15)": 7,
+    "[15,20)": 0,
+    "[20,25)": 0,
+    "[25,26)": 0
+  },
+  "tx_mat_admissible_zero_frac": {
+    "mean": 0.942609419192468,
+    "median": 0.9483240223463687,
+    "min": 0.7360335195530726,
+    "max": 0.9986033519553073,
+    "num_admissible_cells": 2313
+  },
+  "tx_mat_row_sum_admissible": {
+    "min": 0.9999999999999994,
+    "max": 1.0000000000000004,
+    "mean": 1.0
+  },
+  "d0_support_size": 712,
+  "d0_total_mass": 1.0000000000000002,
+  "d0_max_prob": 0.01845089371516433,
+  "d0_min_positive_prob": 4.804920238324044e-05,
+  "reward_nonzero_target_states": {
+    "714": 17875
+  },
+  "reward_nonzero_values_per_target": {
+    "714": [
+      1.0
+    ]
+  },
+  "sofa_stats": {
+    "min": 0.0,
+    "median": 6.464027300805633,
+    "max": 18.02409638554217,
+    "mean": 6.828666591575222
+  },
+  "sofa_quintile_edges": [
+    0.0,
+    4.210884353741497,
+    5.785984848484849,
+    7.190476190476191,
+    9.076470588235294,
+    18.02409638554217
+  ],
+  "sofa_quintile_bucket_counts": [
+    143,
+    143,
+    143,
+    143,
+    144
+  ],
+  "sofa_fixedwidth_histogram": {
+    "[0,3)": 45,
+    "[3,6)": 262,
+    "[6,9)": 262,
+    "[9,12)": 103,
+    "[12,15)": 34,
+    "[15,18)": 9,
+    "[18,24)": 1
+  },
+  "expert_entropy_nonterminal": {
+    "min_bits": 0.028541145773694807,
+    "median_bits": 2.3251505408468267,
+    "max_bits": 4.172377319186152,
+    "mean_bits": 2.0352761248625217,
+    "max_possible_bits": 4.643856189774724
+  },
+  "expert_entropy_histogram_nonterminal": {
+    "[0.0,0.5)": 164,
+    "[0.5,1.0)": 50,
+    "[1.0,1.5)": 11,
+    "[1.5,2.0)": 21,
+    "[2.0,2.5)": 162,
+    "[2.5,3.0)": 140,
+    "[3.0,3.5)": 91,
+    "[3.5,4.0)": 67,
+    "[4.0,5.0)": 7
+  },
+  "expert_deterministic_threshold": {
+    "threshold_bits": 0.5,
+    "n_states_below": 164
+  },
+  "expert_near_uniform_count": 463,
+  "expert_near_uniform_def": "entropy >= 0.95 * log2(|admissible(s)|)",
+  "expert_mass_on_admissible_nonterminal": {
+    "min": 0.12280701754385964,
+    "median": 0.9016100178890877,
+    "max": 0.9971098265895953,
+    "mean": 0.843581542984551,
+    "n_states_with_full_admissible_mass": 0
+  }
+}

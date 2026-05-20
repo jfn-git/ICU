@@ -1,0 +1,19 @@
+env:
+  id: "Sepsis/ICU-Sepsis-v2"
+  inadmissible_action_strategy: "mean"   # mean | terminate | raise_exception
+training:
+  algo: "q_learning"                      # q_learning | sarsa | dyna_q
+  use_action_mask: false
+  num_episodes: 50000
+  alpha: 0.1
+  gamma: 1.0
+  eps_start: 1.0
+  eps_end: 0.05
+  eps_decay_episodes: 10000
+  dyna_n: 5
+evaluation:
+  num_eval_episodes: 5000
+  seeds: [0, 1, 2, 3, 4]
+logging:
+  out_dir: "results"
+  run_name: "default"

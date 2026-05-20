@@ -1,0 +1,27 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.12, pytest-9.0.3, pluggy-1.5.0 -- C:\Users\jeff9\miniconda3\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\jeff9\OneDrive\¤å¥ó\FINAL
+plugins: anyio-4.10.0
+collecting ... collected 18 items
+
+tests/test_sanity.py::test_make_env_default_strategy_loads PASSED        [  5%]
+tests/test_sanity.py::test_make_env_rejects_bad_strategy PASSED          [ 11%]
+tests/test_sanity.py::test_get_dynamics_shapes PASSED                    [ 16%]
+tests/test_sanity.py::test_transition_probabilities_normalised PASSED    [ 22%]
+tests/test_sanity.py::test_d0_is_probability_vector PASSED               [ 27%]
+tests/test_sanity.py::test_admissible_mask_table PASSED                  [ 33%]
+tests/test_sanity.py::test_value_iteration_converges_and_matches_paper PASSED [ 38%]
+tests/test_sanity.py::test_policy_evaluation_matches_uniform_random_baseline PASSED [ 44%]
+tests/test_sanity.py::test_distance_to_optimal_zero_for_optimal PASSED   [ 50%]
+tests/test_sanity.py::test_policy_agreement_with_expert_self_is_one PASSED [ 55%]
+tests/test_sanity.py::test_rollout_random_policy_small PASSED            [ 61%]
+tests/test_sanity.py::test_rollout_expert_policy_small PASSED            [ 66%]
+tests/test_sanity.py::test_q_learning_runs_short[False] PASSED           [ 72%]
+tests/test_sanity.py::test_q_learning_runs_short[True] PASSED            [ 77%]
+tests/test_sanity.py::test_sarsa_runs_short[False] PASSED                [ 83%]
+tests/test_sanity.py::test_sarsa_runs_short[True] PASSED                 [ 88%]
+tests/test_sanity.py::test_dyna_q_runs_short PASSED                      [ 94%]
+tests/test_sanity.py::test_greedy_policy_shape PASSED                    [100%]
+
+============================= 18 passed in 22.17s =============================

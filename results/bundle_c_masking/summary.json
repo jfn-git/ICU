@@ -1,0 +1,23 @@
+{
+  "j_star_dweighted": 0.8751416981974044,
+  "mask_off": {
+    "distance_to_Vstar_mean": 0.08959508537501094,
+    "distance_to_Vstar_std": 0.0028528811385556156,
+    "unsafe_train_mean": 0.8543418227100859,
+    "unsafe_train_std": 0.011907086991805906,
+    "J_pi_mean": 0.7855466128223936,
+    "J_pi_std": 0.0028528811385555145,
+    "agree_mean": 0.04067321178120617,
+    "agree_std": 0.010258582635573487
+  },
+  "mask_on": {
+    "distance_to_Vstar_mean": 0.06934460962339276,
+    "distance_to_Vstar_std": 0.0030663735857681023,
+    "unsafe_train_mean": 0.0,
+    "unsafe_train_std": 0.0,
+    "J_pi_mean": 0.8057970885740119,
+    "J_pi_std": 0.003066373585768104,
+    "agree_mean": 0.5279102384291725,
+    "agree_std": 0.004817830024493024
+  }
+}

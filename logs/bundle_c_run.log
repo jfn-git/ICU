@@ -1,0 +1,63 @@
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+Computing V* via value iteration...
+  V* computed in 9.12s, d_0-weighted J* = 0.8751
+
+>>> qlearning_mean_maskoff_seed0
+    train 8.8s | dist-to-V* = 0.0865 | J(£k) = 0.7886 | unsafe-train = 0.8482 | unsafe-deployed = 0.8505 | agree = 0.043
+
+>>> qlearning_mean_maskoff_seed1
+    train 8.8s | dist-to-V* = 0.0897 | J(£k) = 0.7854 | unsafe-train = 0.8718 | unsafe-deployed = 0.8796 | agree = 0.029
+
+>>> qlearning_mean_maskoff_seed2
+    train 8.6s | dist-to-V* = 0.0885 | J(£k) = 0.7867 | unsafe-train = 0.8545 | unsafe-deployed = 0.8612 | agree = 0.034
+
+>>> qlearning_mean_maskoff_seed3
+    train 8.7s | dist-to-V* = 0.0942 | J(£k) = 0.7809 | unsafe-train = 0.8397 | unsafe-deployed = 0.8413 | agree = 0.041
+
+>>> qlearning_mean_maskoff_seed4
+    train 8.8s | dist-to-V* = 0.0890 | J(£k) = 0.7861 | unsafe-train = 0.8576 | unsafe-deployed = 0.8575 | agree = 0.056
+
+>>> qlearning_mean_maskon_seed0
+    train 8.5s | dist-to-V* = 0.0701 | J(£k) = 0.8050 | unsafe-train = 0.0000 | unsafe-deployed = 0.0000 | agree = 0.534
+
+>>> qlearning_mean_maskon_seed1
+    train 8.8s | dist-to-V* = 0.0672 | J(£k) = 0.8079 | unsafe-train = 0.0000 | unsafe-deployed = 0.0000 | agree = 0.525
+
+>>> qlearning_mean_maskon_seed2
+    train 8.5s | dist-to-V* = 0.0652 | J(£k) = 0.8100 | unsafe-train = 0.0000 | unsafe-deployed = 0.0000 | agree = 0.523
+
+>>> qlearning_mean_maskon_seed3
+    train 8.6s | dist-to-V* = 0.0718 | J(£k) = 0.8033 | unsafe-train = 0.0000 | unsafe-deployed = 0.0000 | agree = 0.532
+
+>>> qlearning_mean_maskon_seed4
+    train 8.5s | dist-to-V* = 0.0724 | J(£k) = 0.8028 | unsafe-train = 0.0000 | unsafe-deployed = 0.0000 | agree = 0.526
+
+Summary:
+{
+  "j_star_dweighted": 0.8751416981974044,
+  "mask_off": {
+    "distance_to_Vstar_mean": 0.08959508537501094,
+    "distance_to_Vstar_std": 0.0028528811385556156,
+    "unsafe_train_mean": 0.8543418227100859,
+    "unsafe_train_std": 0.011907086991805906,
+    "J_pi_mean": 0.7855466128223936,
+    "J_pi_std": 0.0028528811385555145,
+    "agree_mean": 0.04067321178120617,
+    "agree_std": 0.010258582635573487
+  },
+  "mask_on": {
+    "distance_to_Vstar_mean": 0.06934460962339276,
+    "distance_to_Vstar_std": 0.0030663735857681023,
+    "unsafe_train_mean": 0.0,
+    "unsafe_train_std": 0.0,
+    "J_pi_mean": 0.8057970885740119,
+    "J_pi_std": 0.003066373585768104,
+    "agree_mean": 0.5279102384291725,
+    "agree_std": 0.004817830024493024
+  }
+}
+
+Figure saved: C:\Users\jeff9\OneDrive\¤å¥ó\FINAL\figures\preliminary_curve.png
