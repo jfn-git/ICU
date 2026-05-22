@@ -1,0 +1,11 @@
+{
+  "tag": "dyna_q_mean_maskon_seed2",
+  "algo": "dyna_q",
+  "strategy": "mean",
+  "use_mask": true,
+  "seed": 2,
+  "final_policy_distance_to_Vstar": 0.07421475032431259,
+  "final_policy_value_dweighted": 0.8009269478730919,
+  "inadmissible_action_rate_training": 0.0,
+  "deployment_unsupported_state_frac": 0.0
+}

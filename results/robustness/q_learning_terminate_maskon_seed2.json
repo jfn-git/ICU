@@ -1,0 +1,11 @@
+{
+  "tag": "q_learning_terminate_maskon_seed2",
+  "algo": "q_learning",
+  "strategy": "terminate",
+  "use_mask": true,
+  "seed": 2,
+  "final_policy_distance_to_Vstar": 0.06518264389587253,
+  "final_policy_value_dweighted": 0.8099590543015315,
+  "inadmissible_action_rate_training": 0.0,
+  "deployment_unsupported_state_frac": 0.0
+}

@@ -1,0 +1,11 @@
+{
+  "tag": "q_learning_mean_maskoff_seed0",
+  "algo": "q_learning",
+  "strategy": "mean",
+  "use_mask": false,
+  "seed": 0,
+  "final_policy_distance_to_Vstar": 0.08653122736354847,
+  "final_policy_value_dweighted": 0.7886104708338558,
+  "inadmissible_action_rate_training": 0.8481639964611383,
+  "deployment_unsupported_state_frac": 0.8681626928471248
+}

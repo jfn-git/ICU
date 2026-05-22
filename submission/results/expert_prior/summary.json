@@ -1,0 +1,42 @@
+{
+  "j_star_dweighted": 0.8751416981974044,
+  "expert_inadmissible_mass": 0.15641845701544901,
+  "cells": {
+    "vanilla": {
+      "final_policy_distance_to_Vstar_mean": 0.08959508537501094,
+      "final_policy_value_dweighted_mean": 0.7855466128223936,
+      "inadmissible_action_rate_training_mean": 0.8543418227100859,
+      "deployment_unsupported_state_frac_mean": 0.870687237026648,
+      "final_policy_agreement_with_expert_mean": 0.04067321178120617,
+      "final_policy_distance_to_Vstar_std": 0.0028528811385556156,
+      "final_policy_value_dweighted_std": 0.0028528811385555145,
+      "inadmissible_action_rate_training_std": 0.011907086991805906,
+      "deployment_unsupported_state_frac_std": 0.012481680483190457,
+      "final_policy_agreement_with_expert_std": 0.010258582635573487
+    },
+    "expert_raw": {
+      "final_policy_distance_to_Vstar_mean": 0.07357809664496123,
+      "final_policy_value_dweighted_mean": 0.8015636015524434,
+      "inadmissible_action_rate_training_mean": 0.053979813711927296,
+      "deployment_unsupported_state_frac_mean": 0.07882187938288919,
+      "final_policy_agreement_with_expert_mean": 0.6047685834502103,
+      "final_policy_distance_to_Vstar_std": 0.003031840508716336,
+      "final_policy_value_dweighted_std": 0.0030318405087163738,
+      "inadmissible_action_rate_training_std": 0.002896554606905126,
+      "deployment_unsupported_state_frac_std": 0.006225060594999199,
+      "final_policy_agreement_with_expert_std": 0.020788612238834228
+    },
+    "expert_projected": {
+      "final_policy_distance_to_Vstar_mean": 0.07311631106092273,
+      "final_policy_value_dweighted_mean": 0.8020253871364817,
+      "inadmissible_action_rate_training_mean": 0.0010791905013872167,
+      "deployment_unsupported_state_frac_mean": 0.005049088359046283,
+      "final_policy_agreement_with_expert_mean": 0.6474053295932679,
+      "final_policy_distance_to_Vstar_std": 0.0016149695292440765,
+      "final_policy_value_dweighted_std": 0.0016149695292439672,
+      "inadmissible_action_rate_training_std": 0.00044091462435179855,
+      "deployment_unsupported_state_frac_std": 0.0018816841325383924,
+      "final_policy_agreement_with_expert_std": 0.014046267555180111
+    }
+  }
+}

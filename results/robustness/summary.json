@@ -1,0 +1,76 @@
+{
+  "cells": {
+    "q_learning_mean_maskoff": {
+      "distance_to_Vstar_mean": 0.08959508537501094,
+      "distance_to_Vstar_std": 0.0028528811385556156,
+      "deployment_unsupported_mean": 0.870687237026648,
+      "deployment_unsupported_std": 0.012481680483190457
+    },
+    "q_learning_mean_maskon": {
+      "distance_to_Vstar_mean": 0.06934460962339276,
+      "distance_to_Vstar_std": 0.0030663735857681023,
+      "deployment_unsupported_mean": 0.0,
+      "deployment_unsupported_std": 0.0
+    },
+    "sarsa_mean_maskoff": {
+      "distance_to_Vstar_mean": 0.09059046986736122,
+      "distance_to_Vstar_std": 0.0019526382458785723,
+      "deployment_unsupported_mean": 0.8605890603085553,
+      "deployment_unsupported_std": 0.01233105449668066
+    },
+    "sarsa_mean_maskon": {
+      "distance_to_Vstar_mean": 0.0720400795102902,
+      "distance_to_Vstar_std": 0.0021523106921826065,
+      "deployment_unsupported_mean": 0.0,
+      "deployment_unsupported_std": 0.0
+    },
+    "dyna_q_mean_maskoff": {
+      "distance_to_Vstar_mean": 0.08751865743744604,
+      "distance_to_Vstar_std": 0.0014382075069735223,
+      "deployment_unsupported_mean": 0.8443197755960729,
+      "deployment_unsupported_std": 0.00898053890243034
+    },
+    "dyna_q_mean_maskon": {
+      "distance_to_Vstar_mean": 0.06959256495960173,
+      "distance_to_Vstar_std": 0.0042105048355528365,
+      "deployment_unsupported_mean": 0.0,
+      "deployment_unsupported_std": 0.0
+    },
+    "q_learning_terminate_maskoff": {
+      "distance_to_Vstar_mean": 0.10723541721265606,
+      "distance_to_Vstar_std": 0.00542776542483932,
+      "deployment_unsupported_mean": 0.03758765778401122,
+      "deployment_unsupported_std": 0.005900612613734258
+    },
+    "q_learning_terminate_maskon": {
+      "distance_to_Vstar_mean": 0.06934460962339214,
+      "distance_to_Vstar_std": 0.003066373585768101,
+      "deployment_unsupported_mean": 0.0,
+      "deployment_unsupported_std": 0.0
+    },
+    "sarsa_terminate_maskoff": {
+      "distance_to_Vstar_mean": 0.10840396930036741,
+      "distance_to_Vstar_std": 0.0016303479724602294,
+      "deployment_unsupported_mean": 0.04067321178120617,
+      "deployment_unsupported_std": 0.0053406543519382245
+    },
+    "sarsa_terminate_maskon": {
+      "distance_to_Vstar_mean": 0.0720400795102896,
+      "distance_to_Vstar_std": 0.0021523106921826044,
+      "deployment_unsupported_mean": 0.0,
+      "deployment_unsupported_std": 0.0
+    },
+    "dyna_q_terminate_maskoff": {
+      "distance_to_Vstar_mean": 0.07169429594449231,
+      "distance_to_Vstar_std": 0.006070004587050077,
+      "deployment_unsupported_mean": 0.03338008415147265,
+      "deployment_unsupported_std": 0.004254067570295401
+    },
+    "dyna_q_terminate_maskon": {
+      "distance_to_Vstar_mean": 0.06959256495960107,
+      "distance_to_Vstar_std": 0.0042105048355528495,
+      "deployment_unsupported_mean": 0.0,
+      "deployment_unsupported_std": 0.0
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "tag": "sarsa_terminate_maskon_seed1",
+  "algo": "sarsa",
+  "strategy": "terminate",
+  "use_mask": true,
+  "seed": 1,
+  "final_policy_distance_to_Vstar": 0.07418272188958135,
+  "final_policy_value_dweighted": 0.8009589763078225,
+  "inadmissible_action_rate_training": 0.0,
+  "deployment_unsupported_state_frac": 0.0
+}

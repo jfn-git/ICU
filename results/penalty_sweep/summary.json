@@ -1,0 +1,103 @@
+{
+  "j_star_dweighted": 0.8751416981974044,
+  "cells": {
+    "vanilla": {
+      "final_policy_distance_to_Vstar_mean": 0.08959508537501094,
+      "final_policy_value_dweighted_mean": 0.7855466128223936,
+      "inadmissible_action_rate_training_mean": 0.8543418227100859,
+      "deployment_unsupported_state_frac_mean": 0.870687237026648,
+      "deployment_unsupported_visit_frac_mean": 0.8534984100887192,
+      "final_policy_agreement_with_expert_mean": 0.04067321178120617,
+      "final_policy_distance_to_Vstar_std": 0.0028528811385556156,
+      "final_policy_value_dweighted_std": 0.0028528811385555145,
+      "inadmissible_action_rate_training_std": 0.011907086991805906,
+      "deployment_unsupported_state_frac_std": 0.012481680483190457,
+      "deployment_unsupported_visit_frac_std": 0.013845094381190592,
+      "final_policy_agreement_with_expert_std": 0.010258582635573487
+    },
+    "penalty0.01": {
+      "final_policy_distance_to_Vstar_mean": 0.08863542111097543,
+      "final_policy_value_dweighted_mean": 0.786506277086429,
+      "inadmissible_action_rate_training_mean": 0.8196906673107225,
+      "deployment_unsupported_state_frac_mean": 0.82328190743338,
+      "deployment_unsupported_visit_frac_mean": 0.8128532670237714,
+      "final_policy_agreement_with_expert_mean": 0.07096774193548386,
+      "final_policy_distance_to_Vstar_std": 0.0013876366146019243,
+      "final_policy_value_dweighted_std": 0.0013876366146018911,
+      "inadmissible_action_rate_training_std": 0.007969715046814074,
+      "deployment_unsupported_state_frac_std": 0.011263939974901152,
+      "deployment_unsupported_visit_frac_std": 0.008566747337648492,
+      "final_policy_agreement_with_expert_std": 0.010523608124714765
+    },
+    "penalty0.05": {
+      "final_policy_distance_to_Vstar_mean": 0.08658029542021589,
+      "final_policy_value_dweighted_mean": 0.7885614027771887,
+      "inadmissible_action_rate_training_mean": 0.6470655516481061,
+      "deployment_unsupported_state_frac_mean": 0.62945301542777,
+      "deployment_unsupported_visit_frac_mean": 0.6068606014191904,
+      "final_policy_agreement_with_expert_mean": 0.12931276297335204,
+      "final_policy_distance_to_Vstar_std": 0.001739228189463448,
+      "final_policy_value_dweighted_std": 0.0017392281894634172,
+      "inadmissible_action_rate_training_std": 0.022516287820909444,
+      "deployment_unsupported_state_frac_std": 0.028162469336350363,
+      "deployment_unsupported_visit_frac_std": 0.02681172426625619,
+      "final_policy_agreement_with_expert_std": 0.017779453537498695
+    },
+    "penalty0.1": {
+      "final_policy_distance_to_Vstar_mean": 0.08311600296812566,
+      "final_policy_value_dweighted_mean": 0.7920256952292789,
+      "inadmissible_action_rate_training_mean": 0.4314268438197744,
+      "deployment_unsupported_state_frac_mean": 0.3870967741935484,
+      "deployment_unsupported_visit_frac_mean": 0.34545419821303514,
+      "final_policy_agreement_with_expert_mean": 0.22720897615708274,
+      "final_policy_distance_to_Vstar_std": 0.00305169767469346,
+      "final_policy_value_dweighted_std": 0.0030516976746935314,
+      "inadmissible_action_rate_training_std": 0.016907031915338645,
+      "deployment_unsupported_state_frac_std": 0.014405777408256758,
+      "deployment_unsupported_visit_frac_std": 0.019974644475836474,
+      "final_policy_agreement_with_expert_std": 0.01323139008703591
+    },
+    "penalty0.5": {
+      "final_policy_distance_to_Vstar_mean": 0.0853886095692217,
+      "final_policy_value_dweighted_mean": 0.7897530886281828,
+      "inadmissible_action_rate_training_mean": 0.1401460607726894,
+      "deployment_unsupported_state_frac_mean": 0.012903225806451613,
+      "deployment_unsupported_visit_frac_mean": 0.005678096723241123,
+      "final_policy_agreement_with_expert_mean": 0.5107994389901823,
+      "final_policy_distance_to_Vstar_std": 0.001929609925984105,
+      "final_policy_value_dweighted_std": 0.0019296099259840797,
+      "inadmissible_action_rate_training_std": 0.0014614873523960856,
+      "deployment_unsupported_state_frac_std": 0.0031982480367437247,
+      "deployment_unsupported_visit_frac_std": 0.0012612606423904548,
+      "final_policy_agreement_with_expert_std": 0.02309698608722455
+    },
+    "penalty1.0": {
+      "final_policy_distance_to_Vstar_mean": 0.0865019556418708,
+      "final_policy_value_dweighted_mean": 0.7886397425555337,
+      "inadmissible_action_rate_training_mean": 0.1329376370378697,
+      "deployment_unsupported_state_frac_mean": 0.0,
+      "deployment_unsupported_visit_frac_mean": 0.0,
+      "final_policy_agreement_with_expert_mean": 0.5158485273492286,
+      "final_policy_distance_to_Vstar_std": 0.0026419848435806402,
+      "final_policy_value_dweighted_std": 0.002641984843580512,
+      "inadmissible_action_rate_training_std": 0.0008936315605391274,
+      "deployment_unsupported_state_frac_std": 0.0,
+      "deployment_unsupported_visit_frac_std": 0.0,
+      "final_policy_agreement_with_expert_std": 0.008020184266757794
+    },
+    "hardmask": {
+      "final_policy_distance_to_Vstar_mean": 0.06934460962339276,
+      "final_policy_value_dweighted_mean": 0.8057970885740119,
+      "inadmissible_action_rate_training_mean": 0.0,
+      "deployment_unsupported_state_frac_mean": 0.0,
+      "deployment_unsupported_visit_frac_mean": 0.0,
+      "final_policy_agreement_with_expert_mean": 0.5279102384291725,
+      "final_policy_distance_to_Vstar_std": 0.0030663735857681023,
+      "final_policy_value_dweighted_std": 0.003066373585768104,
+      "inadmissible_action_rate_training_std": 0.0,
+      "deployment_unsupported_state_frac_std": 0.0,
+      "deployment_unsupported_visit_frac_std": 0.0,
+      "final_policy_agreement_with_expert_std": 0.004817830024493024
+    }
+  }
+}

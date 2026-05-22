@@ -1,0 +1,43 @@
+{
+  "params": {
+    "deadend_thr": 1e-06,
+    "near_deadend_thr": 0.1,
+    "secured_thr": 0.9,
+    "harm_thr": 0.05
+  },
+  "n_non_terminal": 713,
+  "Vstar_nonterminal_mean": 0.8828955832502198,
+  "Vstar_nonterminal_median": 0.9090807689062295,
+  "Vstar_nonterminal_min": 0.19762918944711977,
+  "state_census": {
+    "n_hard_deadend": 0,
+    "n_near_deadend": 0,
+    "n_secured": 427,
+    "frac_hard_deadend": 0.0,
+    "frac_near_deadend": 0.0,
+    "frac_secured": 0.5988779803646563,
+    "reach_weighted_frac_hard_deadend": 0.0,
+    "reach_weighted_frac_near_deadend": 0.0
+  },
+  "admissibility_vs_harm": {
+    "mean_gap_admissible": 0.014330158105058515,
+    "mean_gap_inadmissible": 0.009729084013543776,
+    "mean_one_step_death_admissible": 0.022570340684347937,
+    "mean_one_step_death_inadmissible": 0.03228631047058207,
+    "frac_harmful_actions_that_are_inadmissible": 0.5864197530864198
+  },
+  "policy_harm_mass": {
+    "optimal": {
+      "expected_harmful_action_prob": 0.0,
+      "expected_one_step_death_prob": 0.01135928023636454
+    },
+    "expert": {
+      "expected_harmful_action_prob": 0.025253044249059595,
+      "expected_one_step_death_prob": 0.02361510039725706
+    },
+    "random": {
+      "expected_harmful_action_prob": 0.011762740133814235,
+      "expected_one_step_death_prob": 0.02324267750027951
+    }
+  }
+}

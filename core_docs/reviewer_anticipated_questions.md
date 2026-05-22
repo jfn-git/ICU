@@ -154,26 +154,30 @@ actions, and in 0 of 713 non-terminal states is the expert fully
 concentrated on admissibility. So clinicians in the source cohort
 demonstrably do choose inadmissible actions about 16 % of the time. We
 explicitly do **not** claim `terminate` is the "right" strategy; we
-characterize all three. In Discussion we argue that `mean` is the most
-faithful to clinical reality, `terminate` is the most useful as an
-exploration sharpener, and `raise_exception` is a debug-only mode (it
-crashes the env on the first inadmissible action and so cannot be used
-for learning). The paper's recommendation will be **strategy choice is a
+characterize the two *learnable* strategies, `mean` and `terminate`
+(`raise_exception` is debug-only and excluded from the learning comparison
+— see Q11). In Discussion we argue that `mean` is the most faithful to
+clinical reality while `terminate` makes the inadmissibility signal explicit
+but at a learning cost (vanilla Q-learning/SARSA reach a *worse*
+distance-to-V* under `terminate` than under `mean`, ~0.107 vs ~0.090, because
+death truncations corrupt model-free learning; see robustness results). The paper's recommendation will be **strategy choice is a
 design knob the benchmark user should make explicit, not a hidden default
 to ignore** — which is itself the contribution.
 
 ## Q11. "raise_exception isn't a learning strategy — why include it in the matrix at all?"
 
-Agreed. We include it for two reasons. (1) Completeness: the v2 API
-documents three modes and a benchmark paper should characterize all three,
-even if one of them is a no-op for learning. (2) It serves as a *test
-fixture* — the moment a learning algorithm picks an inadmissible action,
-it raises, which lets us instrument *during* training how often un-masked
-exploration would visit forbidden cells. We use this to derive a
-"counterfactual inadmissible-action rate" for the un-masked + `mean`
-condition that captures the rate at which the policy *would* have hit a
-forbidden action if the env hadn't smoothly substituted. We report it as
-an instrumentation channel in the Appendix, not as a main result.
+We do **not** include `raise_exception` in the learning matrix, and we are
+explicit about why (so this is an honest scoping decision, not an omission).
+By construction it raises an exception the moment any inadmissible action is
+selected, so a vanilla (unmasked) agent crashes on its first exploratory
+inadmissible step and cannot be trained. The only way to run under
+`raise_exception` is to mask behavior so inadmissible actions are never
+selected — but then the run is identical to masking under any other strategy
+(the strategy branch is never reached), yielding no new learning information.
+We therefore treat it as a debug/assertion mode (a guarantee that a masked
+agent never violates admissibility), not as a learning condition. Our strategy
+comparison is `mean` vs `terminate` (robustness experiment), where both are
+genuinely learnable.
 
 ## Q12. "Your distance-to-V* assumes you have V* exactly. Are you sure the env's known dynamics let you compute it?"
 
@@ -228,6 +232,91 @@ fit `Pearson(unsafe_rate_s, SOFA_s)` per cell so the linear association
 is available to skeptics, but we keep the quantile bar chart as the main
 figure.
 
+## Q16. "Computing the exact V* from known dynamics is unusual — isn't this a non-standard / immature environment, so optimizing on it is meaningless?" (added 2026-05-22)
+
+This is the most strategic version of the "tabular" objection and deserves a
+direct answer. Three points.
+
+(1) **Exact V* is not a sign of immaturity; it is textbook tabular RL.** Value
+iteration on a known finite MDP to obtain V* is standard material (Sutton &
+Barto; Puterman). It is "rare" only relative to *deep/applied* RL (Atari,
+robotics, raw MIMIC), where V* is uncomputable and one must fall back on OPE.
+ICU-Sepsis deliberately lives in the tabular regime where exact computation is
+both possible and standard. Using it is not a loophole; it is using the tool as
+designed.
+
+(2) **The benchmark is legitimate and the known-dynamics property is its
+intended design.** ICU-Sepsis was published at RLC 2024 / RLJ 2024 (Choudhary,
+Gupta, Thomas — UMass). Its stated purpose is to give a small, fully-specified,
+reproducible MDP so researchers can run controlled studies *without* MIMIC-III
+access or OPE noise. We use it exactly as intended. The reward = survival
+indicator with γ = 1 (so V*(s) = max survival probability) is a clean episodic
+formulation, not a bug (see Q9, Q12).
+
+(3) **Known dynamics is our measurement instrument, not our claim.** We are not
+asserting "we optimized a policy on a toy and that is impressive." We run a
+*diagnostic / methodological* study; exact V* is what lets us measure precisely.
+The analogy we deploy in rebuttal: physics studies frictionless planes and
+biology uses model organisms (Drosophila, C. elegans) precisely *because* the
+simplified, controllable system isolates a phenomenon cleanly — nobody dismisses
+a mechanistic finding in Drosophila because flies are simpler than humans. The
+phenomena we study (OOD/unsupported actions, value overestimation) are
+*well-documented general offline-RL problems* (BCQ, BEAR, CQL); we contribute a
+clean, exactly-measurable diagnosis of *where* the failure lives plus a
+benchmark-design lesson (mean imputation hides it), not a quirk of a toy. The
+generality comes from the literature link; the cleanliness comes from the exact
+environment. Finally, exact evaluation is a *strength* here: the healthcare-RL
+literature explicitly warns that OPE is unreliable (Gottesman et al., Nature
+Medicine 2019), so sidestepping OPE is a feature reviewers tend to reward.
+
+→ The one legitimate residual is **external validity / transfer** to
+function-approximation / continuous / deep settings — acknowledged in
+Limitations (below). Our offline empirical-MDP dataset-size sweep
+(`run_offline_datasize.py`) is a first step toward the realistic finite-data
+regime: it shows the same naive-overestimation / pessimism / masking ordering
+when the model must be *estimated from N transitions* rather than known.
+
+## Q17. "The benchmark defines an inadmissible action's transition as the mean of the admissible actions, and the authors say this is *equivalent to choosing a random admissible action*. So selecting inadmissible actions is harmless by construction — your 85% 'unsupported-action rate' is a non-issue." (added 2026-05-22, after source/paper fact-check)
+
+This is the most important objection to pre-empt, because it comes straight from
+the ICU-Sepsis paper's own justification (§4.3: inadmissible transition =
+`1/|A(s)| Σ_{a'∈A(s)} ζ(s,a',s')`; "equivalent to choosing one of the admissible
+actions at random"). We verified the mean-imputation holds exactly in the shipped
+dynamics (all 713 non-terminal states, inadmissible row == unweighted mean of
+admissible rows to 7e-16). The premise is real and we do not dispute the authors'
+construction. Our response has three parts.
+
+(1) **"Equivalent to a random admissible action" is precisely the cost, not a
+defense.** A random admissible action is worse than the *best* admissible action,
+so a policy that selects mean-imputed actions earns random-admissible value, not
+optimal value. Our numbers show exactly this: vanilla Q-learning under the default
+`mean` strategy converges to J(π) = 0.785, essentially the Random (0.780) and
+clinician/Expert (0.782) baselines, while admissibility masking reaches 0.806
+(J* = 0.875). The default lets a model-free learner end up no better than random
+action selection while *appearing* to have learned — and this is invisible in
+survival rate, the only performance metric the original paper reports (return,
+episode length, convergence; **no distance-to-V***). Our exact distance-to-V*
+makes the cost visible.
+
+(2) **The equivalence is a closed-world artifact.** "Inadmissible ≡ average
+admissible" holds *only inside the benchmark*, by construction. In a real
+deployment a data-unsupported action does **not** behave like the cohort average —
+that is what "unsupported" means — so a policy that relies on inadmissible actions
+is exactly the one that breaks under distribution shift. We keep this claim
+benchmark-internal (we do **not** assert clinical danger), but it motivates why
+support-aware learning is the right object of study.
+
+(3) **Different from the paper's own robustness check (Appendix B.3).** The paper
+does probe over-reliance on rare actions — but by randomly removing admissible
+actions and measuring *return* robustness, concluding τ=20 is robust. That check
+is insensitive to our phenomenon by construction: since inadmissible = average,
+return is stable under such perturbations. We measure different things — the
+*rate* at which default agents select inadmissible actions, the *exact* optimality
+cost, the value-leakage mechanism, and a remedy spectrum. We cite §4.3 and B.3
+explicitly and position our work as quantifying the cost of a documented,
+author-justified design choice using metrics the paper does not use — not as
+discovering an unknown bug.
+
 ---
 
 ## Honest gaps we will not paper over
@@ -247,3 +336,12 @@ figure.
   all three; we do not recommend one over another for production use.
   Addressed by changing claim verbs from "should use X" to "must be
   explicitly chosen and reported, because X moves metric Y by Z."
+- **External validity / transfer beyond tabular.** All results are on a
+  716-state tabular MDP with known dynamics. Whether the mean-imputation
+  failure and the behavior-masking fix transfer to function approximation /
+  continuous-state / deep-RL settings is untested and stated as scope in
+  Limitations. The offline empirical-MDP sweep (`run_offline_datasize.py`)
+  partially addresses this by moving from a *known* model to one *estimated
+  from N transitions*, but it is still tabular. This is a scope limitation,
+  not a validity flaw — exact V* on a tabular benchmark is a standard,
+  intended capability (see Q16), used here as a measurement instrument.

@@ -1,0 +1,11 @@
+{
+  "tag": "sarsa_mean_maskoff_seed3",
+  "algo": "sarsa",
+  "strategy": "mean",
+  "use_mask": false,
+  "seed": 3,
+  "final_policy_distance_to_Vstar": 0.09269403653987682,
+  "final_policy_value_dweighted": 0.7824476616575277,
+  "inadmissible_action_rate_training": 0.8632121038353808,
+  "deployment_unsupported_state_frac": 0.8723702664796634
+}

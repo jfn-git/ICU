@@ -1,0 +1,11 @@
+{
+  "tag": "sarsa_terminate_maskoff_seed1",
+  "algo": "sarsa",
+  "strategy": "terminate",
+  "use_mask": false,
+  "seed": 1,
+  "final_policy_distance_to_Vstar": 0.11055703357620862,
+  "final_policy_value_dweighted": 0.7645846646211952,
+  "inadmissible_action_rate_training": 0.1796437851066812,
+  "deployment_unsupported_state_frac": 0.0364656381486676
+}

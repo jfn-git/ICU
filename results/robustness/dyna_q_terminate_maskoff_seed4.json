@@ -1,0 +1,11 @@
+{
+  "tag": "dyna_q_terminate_maskoff_seed4",
+  "algo": "dyna_q",
+  "strategy": "terminate",
+  "use_mask": false,
+  "seed": 4,
+  "final_policy_distance_to_Vstar": 0.07014543918064858,
+  "final_policy_value_dweighted": 0.8049962590167553,
+  "inadmissible_action_rate_training": 0.11202058950489083,
+  "deployment_unsupported_state_frac": 0.03506311360448808
+}

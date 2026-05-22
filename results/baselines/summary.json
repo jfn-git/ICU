@@ -1,0 +1,11 @@
+{
+  "metric": "d0_weighted_policy_value (= survival rate, gamma=1)",
+  "Random": 0.780070902979748,
+  "Expert": 0.7818448892091993,
+  "Optimal": 0.8751416981974044,
+  "paper_reference": {
+    "Random": 0.78,
+    "Expert": 0.78,
+    "Optimal": 0.88
+  }
+}

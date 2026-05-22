@@ -1,0 +1,7 @@
+# Direct dependencies for this project (Python 3.13 tested).
+# NOTE: the ICU-Sepsis environment itself is installed separately from its
+# own repo — see README.md "Setup". It is NOT on this requirements list.
+gymnasium
+numpy
+matplotlib
+pytest

@@ -1,0 +1,364 @@
+% =============================================================================
+% main.tex - ICU-Sepsis OOD-action study (NeurIPS 2026 format, DOUBLE-BLIND)
+%
+% SKELETON / DRAFT 2026-05-22. Method + Experiments are fleshed out; other
+% sections are structured stubs marked "% TODO". Blueprint: core_docs/15_paper_story_spine.md
+%
+% TO COMPILE (Overleaf): drop neurips_2026.sty into the project. Anonymous
+% submission mode (do NOT pass [final]) auto-prints "Anonymous Author(s)" and
+% enables line numbers. Put the six PNGs under ./figures/.
+% ANONYMITY: no names / affiliations / real repo URLs anywhere.
+% =============================================================================
+\documentclass{article}
+
+\usepackage{neurips_2026}            % submission mode = anonymous + line numbers
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}                % for enumerate [leftmargin=...] options
+
+\newcommand{\Adm}{\mathcal{A}}
+\newcommand{\dist}{\mathrm{dist}\text{-}V^\star}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{When Mean Imputation Hides Unsupported Actions:\\
+Diagnosing and Repairing an Out-of-Distribution Action\\
+Failure Mode in the ICU-Sepsis Benchmark}
+
+\author{%
+  Anonymous Author(s)\\
+  Affiliation\\
+  \texttt{email}\\
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Medical reinforcement-learning benchmarks must decide how to handle actions with
+insufficient data support. ICU-Sepsis, a tabular MDP distilled from MIMIC-III,
+adopts a default \texttt{mean} strategy that sets the transition of every
+inadmissible (data-unsupported) action to the \emph{average} of the admissible
+actions in that state, and argues this is benign because it is ``equivalent to
+choosing a random admissible action.'' We show that this design has a measurable
+cost that the benchmark's headline metric (survival rate) hides: under the
+default, vanilla Q-learning deploys unsupported actions in $\sim$87\% of states
+and converges to a policy value ($J(\pi){=}0.785$) no better than the Random
+(0.780) and clinician (0.782) baselines, far from the optimum ($J^\star{=}0.875$).
+Because the benchmark exposes its full dynamics, we evaluate every policy
+\emph{exactly} against $V^\star$ and use this as a controlled testbed for
+out-of-distribution (OOD) action handling. A component ablation localizes the
+failure to \emph{behavior-level} sampling --- restricting behavior to supported
+actions is necessary and sufficient, while masking only the Bellman target or the
+deployed policy does not suffice --- and a Q-value-leakage diagnostic exposes the
+mechanism. We then compare a spectrum of support-aware remedies (support
+penalties, CQL-style conservatism, and admissibility masking) both online and in
+a finite-data offline empirical-MDP regime, where naive mean-imputation
+overestimates its own value and stagnates while pessimism and masking remain
+calibrated and improve with data. Our results are benchmark-internal and are not
+clinical recommendations; they show that inadmissible-action handling must be
+reported, not left to a hidden default.
+\end{abstract}
+
+% =============================================================================
+\section{Introduction}
+% TODO: full prose. Logic (see core_docs/15 §2):
+% 1. Medical RL needs reproducible benchmarks; real pipelines (MIMIC-III) need OPE,
+%    which is noisy and unreliable \citep{gottesman2019guidelines,gottesman2018evaluating}.
+% 2. ICU-Sepsis \citep{choudhary2024icusepsis} solves this with a fully-known tabular MDP.
+% 3. But it must handle data-unsupported actions; the default mean-imputation is a
+%    hidden design choice we show is not cost-free.
+% 4. Reframe: this is the offline-RL OOD-action problem \citep{fujimoto2019bcq,kumar2020cql}.
+% 5. Known dynamics = exact V* = a measurement instrument (not an optimization claim).
+\todo{write Introduction prose}
+
+\paragraph{Contributions.}
+\begin{enumerate}[leftmargin=2em,itemsep=2pt,topsep=2pt]
+  \item \textbf{Failure diagnosis.} We show ICU-Sepsis's default \texttt{mean}
+  strategy lets model-free agents select data-unsupported actions at high rates
+  ($\sim$87\% of states) at a real value cost ($J(\pi)\approx$ random/clinician
+  baselines) that survival rate hides (\S\ref{sec:failure}).
+  \item \textbf{Mechanism localization.} A component ablation plus a Q-value-leakage
+  diagnostic show the failure is a \emph{behavior-level} sampling problem:
+  restricting behavior to supported actions is necessary \emph{and} sufficient
+  (\S\ref{sec:mechanism}).
+  \item \textbf{Remedy spectrum, exactly evaluated.} We compare support penalties,
+  CQL-style conservatism, and admissibility masking online and in a finite-data
+  offline empirical-MDP sweep, using exact $V^\star$ (\S\ref{sec:remedy}).
+  \item \textbf{Benchmark guidance.} We release one-command scripts and recommend
+  that ICU-Sepsis results report inadmissible-action handling explicitly.
+\end{enumerate}
+
+% =============================================================================
+\section{Related Work}
+% TODO: import from core_docs/12_related_work_draft.md, ~5 short paragraphs:
+% (a) medical RL benchmarks \citep{choudhary2024icusepsis,komorowski2018aiclinician,raghu2017continuous,mimic_sepsis_arxiv2510_24500};
+% (b) offline RL & OOD actions \citep{fujimoto2019bcq,kumar2019bear,kumar2020cql,rashidinejad2021pessimism,jin2021pessimism};
+% (c) invalid/forbidden action masking \citep{huang2021masking,seurin2020forbidden};
+% (d) risk/dead-ends \citep{fatemi2021deadends}; expert priors \citep{hester2018dqfd}; factored actions \citep{tang2022factored};
+% (e) evaluation pitfalls \citep{gottesman2019guidelines,gottesman2018evaluating}.
+% Each paragraph ends with "our work differs by ...".
+\todo{write Related Work prose}
+
+% =============================================================================
+\section{Background: ICU-Sepsis and Mean Imputation}
+\label{sec:background}
+ICU-Sepsis \citep{choudhary2024icusepsis} is a tabular MDP with $|\mathcal{S}|{=}716$
+states (713 patient states plus death, survival, $s_\infty$) and $|\mathcal{A}|{=}25$
+actions (5 fluid $\times$ 5 vasopressor levels). The reward is a survival indicator
+(${+}1$ on transition into the survival state, $0$ otherwise) and $\gamma{=}1$, so
+episodes are short and the undiscounted return equals the survival probability;
+consequently $V^\star(s)$ is exactly the maximum achievable survival probability
+from $s$. Because the full transition model is shipped with the benchmark, we
+compute $V^\star$ and the exact value $V^\pi$ of any policy by value iteration,
+avoiding off-policy estimation entirely.
+
+\paragraph{Admissibility and the \texttt{mean} strategy.}
+Each state has an \emph{admissible} action set $\Adm(s)$: actions taken at least
+$\tau{=}20$ times in the source cohort, so their transition estimates are reliable.
+The remaining actions are \emph{inadmissible} (data-unsupported); admissible sets
+are small (median 4 of 25). For an inadmissible action $a\notin\Adm(s)$, the
+benchmark's default \texttt{mean} strategy defines the transition as the unweighted
+average over admissible actions:
+\begin{equation}
+\label{eq:mean}
+P(s'\mid s,a) \;=\; \frac{1}{|\Adm(s)|}\sum_{a'\in\Adm(s)} \zeta(s,a',s'),
+\qquad a\notin\Adm(s),
+\end{equation}
+where $\zeta$ is the empirical admissible-action transition. We verified
+Eq.~\eqref{eq:mean} holds exactly in the shipped dynamics (every inadmissible row
+equals the admissible mean to $7\times10^{-16}$). The benchmark motivates this as
+``equivalent to choosing a random admissible action'' \citep{choudhary2024icusepsis};
+\S\ref{sec:failure} shows this equivalence is precisely where the cost arises.
+
+% =============================================================================
+\section{Method: Support-Aware Tabular RL}
+\label{sec:method}
+We frame inadmissible actions as \emph{out-of-distribution (OOD)} / low-support
+actions, the central object of offline RL \citep{fujimoto2019bcq,kumar2020cql},
+and study a spectrum of remedies that all share a tabular $Q:\mathcal{S}\times
+\mathcal{A}\to\mathbb{R}$ update, isolating the effect of \emph{where} support is
+enforced rather than of function approximation.
+
+\paragraph{Remedy spectrum.}
+(i) \emph{Vanilla} Q-learning over all 25 actions.
+(ii) \emph{Support penalty}: $r'(s,a,s') = r - \lambda\,\mathbb{1}[a\notin\Adm(s)]$,
+a learnable negative signal at the behavior/reward level, $\lambda\in\{0.01,\dots,1\}$.
+(iii) \emph{CQL-style conservatism}: at each visited state, nudge $Q(s,\cdot)$ toward
+the admissible support, $Q(s,\cdot)\!\mathrel{-}=\!\alpha\kappa\,(\mathrm{softmax}(Q(s,\cdot)) -
+u_{\Adm(s)})$ with $u_{\Adm(s)}$ uniform on $\Adm(s)$ --- a value-level conservatism.
+(iv) \emph{Admissibility masking}, decomposed into three independently-toggleable
+components: \textbf{behavior} (restrict $\epsilon$-greedy selection to $\Adm(s)$),
+\textbf{target} (restrict the Bellman backup $\max$ to $\Adm(s')$), and \textbf{policy}
+(restrict the final greedy extraction to $\Adm(s)$). Hard masking enables all three.
+
+\paragraph{Metrics (all exact unless noted).}
+distance-to-$V^\star$, $\dist(\pi)=\mathbb{E}_{s\sim d_0}[V^\star(s)-V^\pi(s)]$;
+deployed unsupported-action rate, the fraction of (non-terminal) states where the
+greedy policy picks $a\notin\Adm(s)$; \emph{Q-value leakage},
+$\frac{1}{|\mathcal{S}_{\mathrm{nt}}|}\sum_s\!\big[\max_{a\notin\Adm(s)}Q(s,a)-
+\max_{a\in\Adm(s)}Q(s,a)\big]$, positive when unsupported actions are over-valued;
+value \emph{overestimation} (offline), the model's self-estimate minus the true
+value; and agreement with the clinician policy.
+
+% =============================================================================
+\section{Experiments}
+\label{sec:experiments}
+\paragraph{Setup.} All runs use 5 seeds, $5{\times}10^4$ episodes, $\alpha{=}0.1$,
+$\gamma{=}1$, $\epsilon$ annealed $1.0{\to}0.05$ over $10^4$ episodes. We report
+mean $\pm$ std (per-seed scatter in the appendix); we do not rest conclusions on
+small survival differences but on large-support diagnostics.
+
+\paragraph{Baselines reproduce the benchmark (Table~\ref{tab:baselines}).}
+Exact $d_0$-weighted values match the published Random/Expert/Optimal numbers.
+
+\begin{table}[t]
+\centering
+\caption{Exact baseline reproduction ($d_0$-weighted policy value $=$ survival rate).}
+\label{tab:baselines}
+\begin{tabular}{lccc}
+\toprule
+ & Random & Clinician (Expert) & Optimal ($V^\star$) \\
+\midrule
+$J(\pi)$ & 0.780 & 0.782 & 0.875 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The hidden failure (Claim 1)}
+\label{sec:failure}
+Under the default \texttt{mean} strategy, vanilla Q-learning deploys inadmissible
+actions in $\sim$87\% of states and reaches $J(\pi){=}0.785$ and
+$\dist{=}0.090$ --- essentially the Random (0.780) / clinician (0.782) baselines.
+Crucially, this is \emph{not} a mere labeling artifact: because an inadmissible
+action behaves like a random admissible one (Eq.~\eqref{eq:mean}), selecting it
+earns random-admissible value rather than the best admissible value, which is
+exactly the gap to $V^\star$. Survival rate hides this (the benchmark reports only
+return/length/convergence); $\dist$ exposes it. Admissibility control recovers
+$J{=}0.806$, $\dist{=}0.069$. \todo{Fig.~\ref{fig:spectrum} left panel callout.}
+
+\subsection{Mechanism: where the failure lives (Claim 2)}
+\label{sec:mechanism}
+A component ablation (Table~\ref{tab:ablation}) localizes the failure to
+behavior-level sampling. Masking behavior alone is \emph{necessary and sufficient}
+(identical to the full mask); masking only the target barely helps and leaves
+$\sim$77\% deployed unsupported; masking only the deployed policy zeroes deployment
+but leaves the $Q$-table corrupted (leakage unchanged at $+0.46$). The Q-value
+leakage curve flips from $+0.46$ (vanilla) to $-0.80$ (behavior/full mask),
+showing unsupported actions become competitive only because they are sampled and
+updated under mean-imputed dynamics (Fig.~\ref{fig:ablation}).
+
+\begin{table}[t]
+\centering
+\caption{Component ablation (5 seeds). Behavior masking is necessary and sufficient.}
+\label{tab:ablation}
+\begin{tabular}{lcccl}
+\toprule
+Variant & $\dist\,\downarrow$ & Deploy unsupp. & Q-leakage & Reading \\
+\midrule
+vanilla            & 0.090 & 0.87 & $+0.46$ & unsupported over-valued \\
+target-only        & 0.085 & 0.77 & $+0.07$ & backup alone insufficient \\
+policy-only        & 0.083 & 0.00 & $+0.46$ & band-aid; $Q$ corrupted \\
+CQL ($\kappa{=}1$) & 0.080 & 0.00 & $-2.95$ & best \emph{soft} remedy \\
+\textbf{behavior-only} & \textbf{0.069} & 0.00 & $-0.80$ & necessary \& sufficient \\
+full mask          & 0.069 & 0.00 & $-0.80$ & $=$ behavior-only \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Remedy spectrum, online and offline (Claim 3)}
+\label{sec:remedy}
+\paragraph{Online.} Support penalties trace a support--value trade-off: larger
+$\lambda$ drives deployed unsupported actions to $0$ but $\dist$ plateaus
+($\approx 0.085$) and is Pareto-dominated by hard masking ($0.069$);
+CQL-conservatism is the best soft remedy ($0.080$) but still trails, with a
+$\kappa$ sweet spot (Fig.~\ref{fig:spectrum}).
+
+\paragraph{Offline empirical MDP (Fig.~\ref{fig:offline}).} We collect $N$
+transitions under the clinician behavior policy, build the certainty-equivalent
+empirical model, and compare \emph{naive} (mean-impute unseen actions),
+\emph{pessimistic} VI-LCB \citep{jin2021pessimism,rashidinejad2021pessimism}, and
+\emph{admissibility-masked} value iteration --- evaluated exactly against the true
+$V^\star$. Naive overestimates its own value ($+0.21$ at $N{=}10^5$) and its
+realized policy \emph{stagnates} ($\dist\approx0.093$ regardless of $N$);
+pessimism is calibrated ($\approx0$) and improves ($\to0.069$); masking removes
+unsupported actions and reaches $0.065$. Exact $V^\star$ is what makes the
+overestimation pathology measurable --- normally impossible in healthcare RL
+\citep{gottesman2019guidelines}.
+
+\subsection{Supplementary analyses}
+\paragraph{Expert prior via admissible projection (Fig.~\ref{fig:expert}).}
+Clinician-guided exploration learns much faster than uniform, but the raw clinician
+policy itself places $\sim$16\% mass on inadmissible actions; \emph{projecting} the
+prior onto $\Adm(s)$ drives deployed unsupported actions to $0.5\%$ while preserving
+value and raising clinician agreement to $0.65$. This is support projection, not
+imitation learning.
+
+\paragraph{Robustness (Fig.~\ref{fig:robust}).} The failure and its fix hold across
+Q-learning, SARSA, and Dyna-Q. Under the \texttt{terminate} strategy (inadmissible
+$\to$ death), vanilla agents naturally avoid unsupported actions (deploy rate
+$85\%{\to}\sim3$--$4\%$), confirming the failure is specific to \texttt{mean}.
+
+\paragraph{No dead-ends (honest calibration).} Motivated by clinical-RL dead-end
+analysis \citep{fatemi2021deadends}, we checked for states from which death is
+unavoidable: ICU-Sepsis has \emph{none} ($\min_s V^\star(s){=}0.198$; 427/713 states
+are ``secured'' with $V^\star{>}0.9$). Severity (SOFA) correlates with lower
+survivability, and mean imputation also compresses the higher one-step death risk
+of inadmissible actions (0.032 vs.\ 0.023).
+
+% --- Figure placeholders (put PNGs in ./figures/) ---
+\begin{figure}[t]\centering
+\fbox{\parbox{0.9\linewidth}{\centering \todo{Figure 1: overview schematic from core_docs/15 \S4}}}
+\caption{Overview. Mean imputation makes unsupported actions learnable without penalty.}
+\label{fig:overview}
+\end{figure}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.85\linewidth]{figures/penalty_tradeoff.png}
+\caption{Remedy spectrum: support--value trade-off; hard masking is Pareto-best.}
+\label{fig:spectrum}
+\end{figure}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.95\linewidth]{figures/component_ablation.png}
+\caption{Component ablation (left) and Q-value-leakage mechanism (right).}
+\label{fig:ablation}
+\end{figure}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.95\linewidth]{figures/offline_datasize.png}
+\caption{Offline empirical-MDP sweep: naive overestimates and stagnates; pessimism
+and masking are calibrated and improve with data.}
+\label{fig:offline}
+\end{figure}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.6\linewidth]{figures/expert_prior_curve.png}
+\caption{Expert-guided exploration; admissible projection preserves value.}
+\label{fig:expert}
+\end{figure}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.95\linewidth]{figures/robustness.png}
+\caption{Robustness across algorithms and strategies.}
+\label{fig:robust}
+\end{figure}
+
+% =============================================================================
+\section{Discussion}
+% TODO prose. Key paragraphs:
+% (1) Why survival rate hides it; multi-metric + exact V* needed.
+% (2) Why a known-dynamics benchmark (Q16): measurement instrument, NOT optimization
+%     claim. Generality of OOD/overestimation from offline RL \citep{kumar2020cql,kumar2019bear};
+%     cleanliness from ICU-Sepsis; exact eval sidesteps OPE \citep{gottesman2019guidelines}.
+% (3) Difference from the benchmark's own perturbation check (Appendix B.3 of
+%     \citealp{choudhary2024icusepsis}): it measures return robustness, insensitive
+%     by construction; we measure selection rate / dist-V* / mechanism / remedies.
+% (4) Benchmark guidance: report inadmissible-action handling.
+% (5) Significance for offline medical RL (paragraph drafted below).
+\todo{write Discussion prose (inline Q16/Q17 defenses, cite B.3)}
+
+\paragraph{Significance for offline medical RL.}
+Offline medical RL inherently learns from logged data with uneven action coverage,
+and how a pipeline handles data-unsupported actions is a consequential design choice
+that outcome metrics such as survival rate can hide. Using a known-dynamics medical
+benchmark as a controlled testbed, we make this failure visible and exactly
+measurable, localize its mechanism, and provide a support-aware
+diagnostic-and-remedy protocol that practitioners building offline medical-RL
+systems can adopt. We stress that this is a methodological caution and an evaluation
+protocol, not a clinical recommendation: the demonstration is tabular and
+benchmark-internal, and what transfers is the phenomenon and the protocol --- not the
+specific numbers.
+
+% =============================================================================
+\section{Limitations}
+Our study is benchmark-internal and tabular: ``unsupported'' means insufficient data
+support, not medical incorrectness, and we make no clinical claims. Whether the
+mean-imputation failure and the behavior-masking fix transfer to function-approximation
+/ continuous / deep settings is untested; the offline empirical-MDP sweep is a step
+toward the realistic finite-data regime but remains tabular. We use 5 seeds (effect
+sizes for the support diagnostics are large, e.g.\ 87\%$\to$0\% deployed unsupported
+and leakage $+0.46\to-0.80$). The clinician policy itself is not fully
+admissibility-respecting, a property of the benchmark we inherit.
+
+% =============================================================================
+\section{Conclusion}
+% TODO: concise takeaway.
+ICU-Sepsis's default mean-imputation makes data-unsupported actions look average, so
+model-free agents adopt them at a value cost that survival rate hides. Using the
+benchmark's exact $V^\star$, we localize the failure to behavior-level sampling and
+compare support-aware remedies online and offline. Inadmissible-action handling
+should be reported, not left to a hidden default. \todo{tighten}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
