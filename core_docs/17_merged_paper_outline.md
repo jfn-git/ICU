@@ -131,3 +131,43 @@
 - [ ] AA-MBRL-Shaped/KL/Full 是否跑得完；跑不完就只留 AA-MBRL 主格
 - [ ] 8 頁是否塞得下——若超，先砍 sample-efficiency inset 與 SOFA×KL（已在 appendix）
 - [ ] references.bib 是否含 B 所有引用（目前 21 筆，需補 UCRL/PSRL/MIMIC-III/sb3 等）
+
+---
+
+## 9. Drafted Discussion prose — external validity（可直接貼，放進 §6 Discussion）
+
+> 補上合併 paper 目前最容易被打的洞：「用結構補 gap」能不能搬到**真正可部署的 offline 醫療 RL**。答案是大半不能，必須在 Discussion 主動講掉（reviewer 很可能問）。
+> Citation keys：`gottesman2019guidelines` / `fujimoto2019bcq` / `kumar2020cql` 已在 `references.bib`；**需補** `auer2008ucrl`、`osband2013psrl`（隊友引用，bib 尚缺）。
+
+```latex
+\paragraph{What transfers, and what does not.}
+Our constructive results---that admissibility masking and an
+admissibility-constrained empirical model recover near-optimal value---are
+\emph{benchmark-internal}, and should not be read as evidence that a deployable
+offline medical-RL system can ``close the gap'' to optimality. Three properties
+make ICU-Sepsis a clean measuring instrument but also bound the generality of
+this gap-closing claim. First, an optimality gap is only definable because the
+benchmark treats its estimated tabular model as ground truth and exposes an exact
+$V^\star$; in a real cohort the dynamics are unknown, $V^\star$ is not computable,
+and the gap itself cannot be measured---evaluation must instead rely on
+off-policy estimators that are noisy and biased \citep{gottesman2019guidelines}.
+Second, the model-based remedy that reaches $V^\star$ re-estimates and re-solves
+the very $716$-state model that defines the benchmark, and does so \emph{online};
+this is inapplicable to the offline regime that motivates medical RL, where new
+interaction is impossible, and it is unsurprising at this scale, where tabular
+model-based RL is already known to be near-optimal
+\citep{auer2008ucrl,osband2013psrl}. Third, the per-state priors are not external
+gifts but statistics of the same logged cohort the agent learns from, so ``using
+the structure'' is concretely \emph{computing} support sets, a behavior policy,
+and severity features from one's own data. What transfers is therefore not the
+score but the \emph{support-aware principle}: data-unsupported actions must be
+treated with explicit pessimism rather than imputed to an average---a prescription
+consistent with offline RL \citep{fujimoto2019bcq,kumar2020cql} and reinforced by
+our finite-data empirical-MDP study (\S\ref{sec:remedy}). ICU-Sepsis lets us
+measure \emph{exactly} a phenomenon that is real and general; the specific
+gap-closing numbers are a property of the benchmark, whereas the diagnosis, the
+mechanism, and the support-aware remedy are what a practitioner should carry to a
+real offline pipeline.
+```
+
+**白話**：結構（support / behavior / severity）在真實 offline 醫療 RL 裡確實存在、也該用，但用法是「對沒資料根據的動作保持悲觀」，**不是「重解 model 把 gap 補到零」**——後者只在小型、自我一致、有標準答案的 tabular 世界成立，真實世界連 gap 都量不到。對應 reviewer 防守見 `19_merged_team_briefing.md` §4 第 9 點。
