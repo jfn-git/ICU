@@ -196,7 +196,7 @@ in the learning update the failure originates.
 Masking unavailable actions is standard in deep RL, both as an analysis target in
 policy-gradient methods \citep{huang2021masking} and as a way to learn from
 forbidden actions \citep{seurin2020forbidden}, and is available off-the-shelf as
-maskable policies \todo{cite Stable-Baselines3 MaskablePPO (Raffin et al.)}. We
+maskable policies \citep{raffin2021sb3}. We
 do not introduce masking; instead, a component ablation shows precisely \emph{where}
 it must act---at the behavior level---and that masking only the target or only the
 deployed policy is insufficient.
@@ -213,7 +213,7 @@ contribution is the diagnosis and mechanism, not a regret or optimality result.
 Potential-based reward shaping leaves the optimal policy invariant
 \citep{ng1999reward}, which justifies our supplementary severity-based shaping;
 constraining a learner toward a behavior policy is likewise a standard offline-RL
-device \citep{kumar2019bear} \todo{cite Wu/Nair behavior-regularized offline RL}.
+device \citep{wu2019behavior,nair2020awac}.
 Our work differs by using these only as supplementary points on the remedy
 spectrum, with admissibility---not shaping---as the load-bearing structure.
 
