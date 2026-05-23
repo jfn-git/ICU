@@ -131,13 +131,11 @@ level ($0.785$ vs.\ $0.780/0.782$), and behavior-level admissibility control
 recovers $\dist$ from $0.090$ to $0.069$.
 
 \paragraph{Structure the benchmark ships but baselines discard.}
-Beyond the mean-imputation default, ICU-Sepsis carries per-state structure that
-standard agents drop during training: which actions have data support
-(admissibility), an empirical transition model, a severity score, and a clinician
-behavior policy. Our main line uses admissibility (P1) and the empirical model
-(P2); severity-based shaping and the clinician prior are supplementary. This
-framing motivates the remedy spectrum: putting the discarded structure back is
-enough to remove the pathology and close the artificial gap.
+Beyond the mean-imputation default, ICU-Sepsis ships per-state structure that
+standard agents discard during training---admissibility, an empirical transition
+model, severity, and a clinician policy. Our main line uses admissibility and the
+empirical model (severity and the clinician prior are supplementary); putting this
+discarded structure back is what removes the pathology.
 
 \paragraph{Contributions.}
 \begin{enumerate}[leftmargin=2em,itemsep=2pt,topsep=2pt]
@@ -407,7 +405,7 @@ best soft remedy ($0.080$) but still trails, with a $\kappa$ sweet spot ($\kappa
 helps, $\kappa{=}2$ over-suppresses to $0.089$) (Fig.~\ref{fig:spectrum}).
 
 \begin{figure}[t]\centering
-\includegraphics[width=0.85\linewidth]{penalty_tradeoff.png}
+\includegraphics[width=0.68\linewidth]{penalty_tradeoff.png}
 \caption{Remedy spectrum: the support--value trade-off; larger penalties remove
 unsupported actions but plateau in $\dist$, and hard masking is Pareto-best
 (5 seeds, $5{\times}10^4$ episodes).}
@@ -481,7 +479,7 @@ Exact $V^\star$ is what makes this overestimation pathology measurable --- norma
 impossible in healthcare RL \citep{gottesman2019guidelines}.
 
 \begin{figure}[t]\centering
-\includegraphics[width=0.95\linewidth]{offline_datasize.png}
+\includegraphics[width=0.78\linewidth]{offline_datasize.png}
 \caption{Offline empirical-MDP sweep: naive mean-imputation overestimates its own
 value and stagnates, while pessimism and masking are calibrated and improve with
 data (5 seeds; exact evaluation against $V^\star$).}
@@ -572,12 +570,11 @@ exact-$V^\star$ auditing protocol; the gap-closing numbers remain a property of 
 benchmark.
 
 \paragraph{Significance for offline medical RL.}
-Offline medical RL inherently learns from logged data with uneven action coverage,
-and how a pipeline handles data-unsupported actions is a consequential design choice
-that survival rate can hide. Our contribution is to make this failure visible and
-exactly measurable on a controlled testbed, localize its mechanism, and package a
-support-aware diagnostic-and-remedy protocol---a methodological caution and
-evaluation protocol, not a clinical recommendation.
+Offline medical RL learns from logged data with uneven action coverage, and how a
+pipeline handles data-unsupported actions is a consequential design choice that
+survival rate can hide. We make this failure visible and exactly measurable on a
+controlled testbed and package a support-aware diagnostic-and-remedy protocol---a
+methodological caution, not a clinical recommendation.
 
 % =============================================================================
 \section{Limitations}
@@ -607,13 +604,12 @@ diagnose and mitigate it.
 % =============================================================================
 \section*{Reproducibility statement}
 All mechanism experiments (baselines, component ablation, penalty sweep, offline
-data-size sweep, expert projection, robustness, dead-end analysis) are computed from
-the shipped ICU-Sepsis dynamics with exact value iteration and are reproducible from
-the released one-command scripts; metric definitions are given in \S\ref{sec:method}.
-Cross-algorithm and model-based ($5{\times}10^5$-episode) results are obtained by
-\emph{exactly} evaluating the teammate's saved policies (committed in the released
-repo) against the true dynamics; the evaluation script is released with our code, so
-every number in Table~\ref{tab:merged} is reproducible.
+data-size sweep, expert projection, robustness, dead-ends) are computed from the
+shipped ICU-Sepsis dynamics by exact value iteration and reproduce from the released
+one-command scripts (metric definitions in \S\ref{sec:method}). The cross-algorithm
+and model-based ($5{\times}10^5$) results are obtained by exactly evaluating the
+teammate's committed policies against the true dynamics with the released evaluation
+script, so every number in Table~\ref{tab:merged} is reproducible.
 
 % =============================================================================
 \bibliographystyle{plainnat}
