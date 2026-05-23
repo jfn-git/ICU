@@ -157,9 +157,10 @@ enough to remove the pathology and close the artificial gap.
   (deployment-masking leaves leakage at $+0.46$)
   (\S\ref{sec:mechanism}).
   \item \textbf{Generality of the diagnosis and remedy, as supporting evidence.}
-  The phenomenon and the support-aware remedy spectrum (support penalty $\to$ CQL
-  conservatism $\to$ admissibility masking $\to$ model-based endpoint AA-MBRL)
-  hold across Sarsa/Q/DQN/PPO and in a finite-data offline empirical-MDP regime,
+  As supporting evidence, the same support-aware improvement pattern (support
+  penalty $\to$ CQL conservatism $\to$ admissibility masking $\to$ model-based
+  endpoint AA-MBRL) appears across Sarsa/Q/DQN/PPO and in a finite-data offline
+  empirical-MDP regime,
   where naive imputation overestimates its own value ($+0.21$) and stagnates
   while pessimism and masking stay calibrated (\S\ref{sec:remedy}).
   \item \textbf{A reusable exact-$V^\star$ auditing protocol.} We package the
@@ -259,9 +260,11 @@ equals the admissible mean to $7\times10^{-16}$). The benchmark motivates this a
 \label{sec:method}
 We frame inadmissible actions as \emph{out-of-distribution (OOD)} / low-support
 actions, the central object of offline RL \citep{fujimoto2019bcq,kumar2020cql},
-and study a spectrum of remedies that all share a tabular $Q:\mathcal{S}\times
-\mathcal{A}\to\mathbb{R}$ update, isolating the effect of \emph{where} support is
-enforced rather than of function approximation.
+and study a spectrum of remedies. Our mechanism study (\S\ref{sec:mechanism}) uses
+tabular $Q:\mathcal{S}\times\mathcal{A}\to\mathbb{R}$ updates to isolate \emph{where}
+support is enforced rather than the effect of function approximation; we then test
+whether the same pattern appears in broader agent classes (DQN, PPO) and a
+model-based learner (\S\ref{sec:remedy}).
 
 \paragraph{Remedy spectrum.}
 (i) \emph{Vanilla} Q-learning over all 25 actions.
@@ -269,7 +272,9 @@ enforced rather than of function approximation.
 a learnable negative signal at the behavior/reward level, $\lambda\in\{0.01,\dots,1\}$.
 (iii) \emph{CQL-style conservatism}: at each visited state, nudge $Q(s,\cdot)$ toward
 the admissible support, $Q(s,\cdot)\!\mathrel{-}=\!\alpha\kappa\,(\mathrm{softmax}(Q(s,\cdot)) -
-u_{\Adm(s)})$ with $u_{\Adm(s)}$ uniform on $\Adm(s)$ --- a value-level conservatism.
+u_{\Adm(s)})$ with $u_{\Adm(s)}$ uniform on $\Adm(s)$ --- a value-level conservatism. This is not a full
+CQL implementation but a CQL-inspired tabular conservative regularizer, testing
+whether soft value suppression can substitute for hard support masking.
 (iv) \emph{Admissibility masking}, decomposed into three independently-toggleable
 components: \textbf{behavior} (restrict $\epsilon$-greedy selection to $\Adm(s)$),
 \textbf{target} (restrict the Bellman backup $\max$ to $\Adm(s')$), and \textbf{policy}
@@ -287,8 +292,8 @@ policy exactly evaluated against the true dynamics (\S\ref{sec:remedy}).}
 
 \paragraph{Metrics (all exact unless noted).}
 distance-to-$V^\star$, $\dist(\pi)=\mathbb{E}_{s\sim d_0}[V^\star(s)-V^\pi(s)]$;
-deployed unsupported-action rate, the fraction of (non-terminal) states where the
-greedy policy picks $a\notin\Adm(s)$; \emph{Q-value leakage},
+deployed unsupported-action rate, the fraction of non-terminal states (counted
+uniformly) where the greedy policy picks $a\notin\Adm(s)$; \emph{Q-value leakage},
 $\frac{1}{|\mathcal{S}_{\mathrm{nt}}|}\sum_s\!\big[\max_{a\notin\Adm(s)}Q(s,a)-
 \max_{a\in\Adm(s)}Q(s,a)\big]$, positive when unsupported actions are over-valued
 (averaged over non-terminal states, each of which retains both admissible and
@@ -519,9 +524,10 @@ masking does converge faster on the rollout learning curves ($\sim$1.8$\times$).
 \paragraph{Why survival rate hides the failure.}
 Survival values occupy a narrow band ($0.78$--$0.875$) and the benchmark's headline
 metrics (return, length, convergence) are insensitive to \emph{which} action is
-chosen when inadmissible actions behave like random admissible ones. Detecting the
-pathology therefore requires multi-metric, exact-$V^\star$ evaluation
-(selection rate, $\dist$, $Q$-leakage), not survival rate alone.
+chosen when inadmissible actions behave like random admissible ones. Survival rate
+alone can therefore obscure the \emph{mechanism}: exact value gaps and support
+diagnostics ($\dist$, deployed-unsupported rate, $Q$-leakage) are needed to explain
+\emph{why} a policy attains a given survival rate.
 
 \paragraph{Why a known-dynamics benchmark.}
 Exact $V^\star$ is a \emph{measurement instrument}, not an optimization claim. The
@@ -594,8 +600,9 @@ model-free agents adopt them at a value cost that survival rate hides. Using the
 benchmark's exact $V^\star$, we localize the failure to behavior-level sampling,
 explain it through an exact $Q$-value-leakage diagnostic, and compare support-aware
 remedies online, across algorithms, and offline. Inadmissible-action handling should
-be reported, not left to a hidden default: the gap was an artifact of mean-imputation,
-and the environment ships the cure.
+be reported, not left to a hidden default: the gap is largely an artifact of
+mean-imputation, and the benchmark already exposes the support information needed to
+diagnose and mitigate it.
 
 % =============================================================================
 \section*{Reproducibility statement}

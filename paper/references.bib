@@ -1,23 +1,5 @@
-% =============================================================================
-% references.bib - ICU-Sepsis ablation project
-% Compiled 2026-05-20 during autonomous verification run.
-%
-% Verification protocol:
-%   - For each entry, the canonical metadata (authors, title, venue, year,
-%     pages/DOI/arXiv id) was cross-checked against at least one authoritative
-%     source: the publisher landing page, PubMed, DBLP, the official RLJ/MLR
-%     proceedings page, arXiv abstract, or the conference proceedings index.
-%   - The source used is recorded in the `note = {verified via ...}` field.
-%   - Entries we could not fully resolve are kept but flagged with a `% UNVERIFIED`
-%     comment so a human can decide whether to keep, replace, or drop them.
-%   - Notable correction: the previously-mislabelled `Boutilier1910Forbidden`
-%     key actually corresponds to a paper by Seurin, Preux, and Pietquin
-%     (NOT Boutilier). Renamed accordingly and kept the original alias as a
-%     comment so existing prose using the old key can be migrated.
-% =============================================================================
+% references.bib -- ICU-Sepsis OOD-action study (submission)
 
-
-% ---------- A.1  ICU-Sepsis benchmark (RLC 2024 / RLJ vol. 4) ----------
 @article{choudhary2024icusepsis,
   author       = {Choudhary, Kartik and Gupta, Dhawal and Thomas, Philip S.},
   title        = {{ICU-Sepsis}: {A} Benchmark {MDP} Built from Real Medical Data},
@@ -25,15 +7,12 @@
   volume       = {4},
   pages        = {1546--1566},
   year         = {2024},
-  note         = {Presented at the Reinforcement Learning Conference (RLC), Amherst, MA, USA, Aug 9--12, 2024. arXiv:2406.05646. Verified via rlj.cs.umass.edu/2024/papers/Paper194.html and arXiv abstract page.},
-  url          = {https://rlj.cs.umass.edu/2024/papers/Paper194.html},
   eprint       = {2406.05646},
   archiveprefix = {arXiv},
-  primaryclass = {cs.LG}
+  primaryclass = {cs.LG},
+  url          = {https://rlj.cs.umass.edu/2024/papers/Paper194.html}
 }
 
-
-% ---------- C.1  Komorowski AI Clinician (Nature Medicine 2018) ----------
 @article{komorowski2018aiclinician,
   author       = {Komorowski, Matthieu and Celi, Leo A. and Badawi, Omar and Gordon, Anthony C. and Faisal, A. Aldo},
   title        = {The Artificial Intelligence Clinician learns optimal treatment strategies for sepsis in intensive care},
@@ -42,13 +21,9 @@
   number       = {11},
   pages        = {1716--1720},
   year         = {2018},
-  month        = nov,
-  doi          = {10.1038/s41591-018-0213-5},
-  note         = {Epub 2018-10-22; PMID 30349085. Verified via PubMed pubmed.ncbi.nlm.nih.gov/30349085/.}
+  doi          = {10.1038/s41591-018-0213-5}
 }
 
-
-% ---------- C.2  Raghu et al. continuous state-space DDQN (MLHC 2017) ----------
 @inproceedings{raghu2017continuous,
   author       = {Raghu, Aniruddh and Komorowski, Matthieu and Celi, Leo Anthony and Szolovits, Peter and Ghassemi, Marzyeh},
   title        = {Continuous State-Space Models for Optimal Sepsis Treatment: A Deep Reinforcement Learning Approach},
@@ -57,14 +32,10 @@
   volume       = {68},
   pages        = {147--163},
   year         = {2017},
-  editor       = {Doshi-Velez, Finale and Fackler, Jim and Kale, David and Ranganath, Rajesh and Wallace, Byron and Wiens, Jenna},
   publisher    = {PMLR},
-  url          = {https://proceedings.mlr.press/v68/raghu17a.html},
-  note         = {Verified via proceedings.mlr.press/v68/raghu17a.html.}
+  url          = {https://proceedings.mlr.press/v68/raghu17a.html}
 }
 
-
-% ---------- C.3  Gottesman et al. RL-in-healthcare guidelines (Nat Med 2019) --
 @article{gottesman2019guidelines,
   author       = {Gottesman, Omer and Johansson, Fredrik and Komorowski, Matthieu and Faisal, Aldo and Sontag, David and Doshi-Velez, Finale and Celi, Leo Anthony},
   title        = {Guidelines for reinforcement learning in healthcare},
@@ -73,28 +44,18 @@
   number       = {1},
   pages        = {16--18},
   year         = {2019},
-  month        = jan,
-  doi          = {10.1038/s41591-018-0310-5},
-  note         = {PMID 30617332. Verified via PubMed pubmed.ncbi.nlm.nih.gov/30617332/.}
+  doi          = {10.1038/s41591-018-0310-5}
 }
 
-
-% ---------- D.3  Ng, Harada, Russell potential-based reward shaping (ICML 1999)
 @inproceedings{ng1999reward,
   author       = {Ng, Andrew Y. and Harada, Daishi and Russell, Stuart J.},
   title        = {Policy Invariance under Reward Transformations: {T}heory and Application to Reward Shaping},
   booktitle    = {Proceedings of the Sixteenth International Conference on Machine Learning ({ICML})},
   pages        = {278--287},
   year         = {1999},
-  publisher    = {Morgan Kaufmann},
-  address      = {San Francisco, CA, USA},
-  note         = {Verified via ACM DL dl.acm.org/doi/10.5555/645528.657613 and the canonical Ng et al. listing at cs.utexas.edu/~shivaram/readings/b2hd-NgHR1999.html.}
+  publisher    = {Morgan Kaufmann}
 }
 
-
-% ---------- D.1  Huang & Ontanon - invalid action masking (FLAIRS-35 2022) ---
-% Note: the original notes labelled this "FLAIRS-34 2021" — that was wrong.
-% The FLAIRS proceedings entry is volume 35 (FLAIRS-35), May 2022.
 @inproceedings{huang2021masking,
   author       = {Huang, Shengyi and Onta\~{n}\'{o}n, Santiago},
   title        = {A Closer Look at Invalid Action Masking in Policy Gradient Algorithms},
@@ -105,12 +66,9 @@
   eprint       = {2006.14171},
   archiveprefix = {arXiv},
   primaryclass = {cs.LG},
-  url          = {https://journals.flvc.org/FLAIRS/article/view/130584},
-  note         = {arXiv v1 submitted 2020-06-25. FLAIRS-35 (the 35th International FLAIRS Conference) was held in May 2022; published in vol. 35 of the FLAIRS proceedings. Verified via journals.flvc.org/FLAIRS/article/view/130584 and arxiv.org/abs/2006.14171. (Citation key kept as `huang2021masking` for back-compatibility with existing draft prose; the actual publication year is 2022.)}
+  url          = {https://journals.flvc.org/FLAIRS/article/view/130584}
 }
 
-
-% ---------- Sutton & Barto textbook (MIT Press 2018) ------------------------
 @book{suttonbarto2018,
   author       = {Sutton, Richard S. and Barto, Andrew G.},
   title        = {Reinforcement Learning: An Introduction},
@@ -118,56 +76,31 @@
   publisher    = {MIT Press},
   address      = {Cambridge, MA, USA},
   year         = {2018},
-  isbn         = {9780262039246},
-  note         = {Adaptive Computation and Machine Learning series, 552 pp. Verified via mitpress.mit.edu/9780262039246/reinforcement-learning/.}
+  isbn         = {9780262039246}
 }
 
-
-% ---------- D.2  Seurin, Preux, Pietquin - DQN from forbidden actions ----
-% CORRECTION: this entry was previously keyed `boutilier2019forbidden` in our
-% related-work notes. That attribution was WRONG. The actual authors are
-% Mathieu Seurin, Philippe Preux, and Olivier Pietquin. The arXiv preprint
-% (1910.02078) was first posted in October 2019 and the paper appeared at
-% IJCNN 2020. We keep the legacy key as a comment so existing prose can be
-% migrated; the canonical key is `seurin2020forbidden`.
-%
-% legacy alias: boutilier2019forbidden  (DO NOT USE — wrong author)
 @inproceedings{seurin2020forbidden,
   author       = {Seurin, Mathieu and Preux, Philippe and Pietquin, Olivier},
   title        = {``{I'm} sorry {D}ave, {I'm} afraid {I} can't do that'' {D}eep {Q}-Learning from Forbidden Actions},
   booktitle    = {2020 International Joint Conference on Neural Networks ({IJCNN})},
   year         = {2020},
-  month        = jul,
-  address      = {Glasgow, UK},
   publisher    = {IEEE},
   eprint       = {1910.02078},
   archiveprefix = {arXiv},
-  primaryclass = {cs.LG},
-  note         = {arXiv v1 posted 2019-10-04. Verified via arxiv.org/abs/1910.02078, inria.hal.science/hal-02387419 and research.google/pubs/im-sorry-dave-...}
+  primaryclass = {cs.LG}
 }
 
-
-% ---------- B.1  MIMIC-Sepsis benchmark (arXiv 2510.24500, 2025) ----------
 @misc{mimic_sepsis_arxiv2510_24500,
   author       = {Huang, Yong and Yang, Zhongqi and Rahmani, Amir M.},
   title        = {{MIMIC-Sepsis}: {A} Curated Benchmark for Modeling and Learning from Sepsis Trajectories in the {ICU}},
   year         = {2025},
-  month        = oct,
   howpublished = {arXiv preprint arXiv:2510.24500},
   eprint       = {2510.24500},
   archiveprefix = {arXiv},
   primaryclass = {cs.LG},
-  url          = {https://arxiv.org/abs/2510.24500},
-  note         = {arXiv v1 submitted 2025-10-28. Preprint only -- no peer-reviewed venue found as of 2026-05-20. Verified via arxiv.org/abs/2510.24500 and openreview.net/forum?id=iWvvpiA5ej.}
+  url          = {https://arxiv.org/abs/2510.24500}
 }
 
-
-% ---------- B.1  CPQ-IQL safe offline RL on ICU-Sepsis (Scilight TAI 2026) --
-% This is the sciltp.com PDF cited in section B.1 of the related-work notes.
-% Verified peer-reviewed venue: Transactions on Artificial Intelligence (TAI),
-% published by Scilight Press (a relatively new open-access publisher; the
-% journal is indexed in ASCI and DOAJ per its own page, but is *not* indexed
-% in Scopus or Web of Science as of 2026-05-20, so reviewer caution is warranted).
 @article{cpqiql_safe_offline_sepsis,
   author       = {Zhang, Bailing and Mi, Yuwei},
   title        = {Safe Offline Reinforcement Learning for Sepsis Treatment},
@@ -177,13 +110,9 @@
   pages        = {103--118},
   year         = {2026},
   publisher    = {Scilight Press},
-  doi          = {10.53941/tai.2026.100007},
-  url          = {https://www.sciltp.com/journals/tai},
-  note         = {Open-access; peer-reviewed per journal policy. Verified via sciltp.com/journals/tai article listing (DOI 10.53941/tai.2026.100007). Journal is newer / not yet Scopus-indexed -- treat as a peer-reviewed but lower-tier venue.}
+  doi          = {10.53941/tai.2026.100007}
 }
 
-
-% ---------- C.4  Tu et al. - offline safe RL for sepsis (Springer HCIS 2025)
 @article{springer2025offlinesafe,
   author       = {Tu, Rui and Luo, Zhipeng and Pan, Chuanliang and Wang, Zhong and Su, Jie and Zhang, Yu and Wang, Yifan},
   title        = {Offline Safe Reinforcement Learning for Sepsis Treatment: {T}ackling Variable-Length Episodes with Sparse Rewards},
@@ -193,12 +122,9 @@
   pages        = {63--76},
   year         = {2025},
   publisher    = {Springer},
-  doi          = {10.1007/s44230-025-00093-7},
-  note         = {Verified via dblp.org/rec/journals/hcisys/TuLPWSZW25.html and link.springer.com/article/10.1007/s44230-025-00093-7.}
+  doi          = {10.1007/s44230-025-00093-7}
 }
 
-
-% ---------- C.6  Bock et al. - distributional RL on sepsis (PLOS ONE 2022) --
 @article{plosone2022superhuman,
   author       = {B{\"o}ck, Markus and Malle, Julien and Pasterk, Daniel and Kukina, Hrvoje and Hasani, Ramin and Heitzinger, Clemens},
   title        = {Superhuman performance on sepsis {MIMIC-III} data by distributional reinforcement learning},
@@ -208,23 +134,19 @@
   pages        = {e0275358},
   year         = {2022},
   publisher    = {Public Library of Science},
-  doi          = {10.1371/journal.pone.0275358},
-  note         = {Verified via journals.plos.org/plosone/article?id=10.1371/journal.pone.0275358. Cited critically -- the ``superhuman'' framing was challenged in post-publication discussion.}
+  doi          = {10.1371/journal.pone.0275358}
 }
 
-
-% ---------- Offline RL / OOD-action support references added 2026-05-22 ----
 @inproceedings{fujimoto2019bcq,
-  title        = {Off-Policy Deep Reinforcement Learning without Exploration},
   author       = {Fujimoto, Scott and Meger, David and Precup, Doina},
+  title        = {Off-Policy Deep Reinforcement Learning without Exploration},
   booktitle    = {Proceedings of the 36th International Conference on Machine Learning},
+  series       = {Proceedings of Machine Learning Research},
+  volume       = {97},
   pages        = {2052--2062},
   year         = {2019},
-  volume       = {97},
-  series       = {Proceedings of Machine Learning Research},
   publisher    = {PMLR},
-  url          = {https://proceedings.mlr.press/v97/fujimoto19a.html},
-  note         = {Verified via PMLR proceedings page. Introduces batch-constrained Q-learning for fixed-batch offline RL.}
+  url          = {https://proceedings.mlr.press/v97/fujimoto19a.html}
 }
 
 @inproceedings{kumar2020cql,
@@ -232,9 +154,7 @@
   title        = {Conservative {Q}-Learning for Offline Reinforcement Learning},
   booktitle    = {Advances in Neural Information Processing Systems},
   volume       = {33},
-  year         = {2020},
-  url          = {https://proceedings.neurips.cc/paper/2020/hash/0d2b2061826a5df3221116a5085a6052-Abstract.html},
-  note         = {Verified via NeurIPS proceedings page.}
+  year         = {2020}
 }
 
 @inproceedings{kumar2019bear,
@@ -242,9 +162,7 @@
   title        = {Stabilizing Off-Policy {Q}-Learning via Bootstrapping Error Reduction},
   booktitle    = {Advances in Neural Information Processing Systems},
   volume       = {32},
-  year         = {2019},
-  url          = {https://papers.neurips.cc/paper/9349-stabilizing-off-policy-q-learning-via-bootstrapping-error-reduction},
-  note         = {Verified via NeurIPS proceedings page.}
+  year         = {2019}
 }
 
 @inproceedings{rashidinejad2021pessimism,
@@ -252,34 +170,27 @@
   title        = {Bridging Offline Reinforcement Learning and Imitation Learning: {A} Tale of Pessimism},
   booktitle    = {Advances in Neural Information Processing Systems},
   volume       = {34},
-  year         = {2021},
-  url          = {https://proceedings.neurips.cc/paper/2021/hash/60ce36723c17bbac504f2ef4c8a46995-Abstract.html},
-  note         = {Verified via NeurIPS proceedings page.}
+  year         = {2021}
 }
 
 @inproceedings{jin2021pessimism,
-  title        = {Is Pessimism Provably Efficient for Offline {RL}?},
   author       = {Jin, Ying and Yang, Zhuoran and Wang, Zhaoran},
+  title        = {Is Pessimism Provably Efficient for Offline {RL}?},
   booktitle    = {Proceedings of the 38th International Conference on Machine Learning},
+  series       = {Proceedings of Machine Learning Research},
+  volume       = {139},
   pages        = {5084--5096},
   year         = {2021},
-  volume       = {139},
-  series       = {Proceedings of Machine Learning Research},
   publisher    = {PMLR},
-  url          = {https://proceedings.mlr.press/v139/jin21e.html},
-  note         = {Verified via PMLR proceedings page.}
+  url          = {https://proceedings.mlr.press/v139/jin21e.html}
 }
 
-
-% ---------- Dead-end / expert-prior / factored-action references added 2026-05-22
 @inproceedings{fatemi2021deadends,
   author       = {Fatemi, Mehdi and Killian, Taylor W. and Subramanian, Jayakumar and Ghassemi, Marzyeh},
   title        = {Medical Dead-ends and Learning to Identify High-Risk States and Treatments},
   booktitle    = {Advances in Neural Information Processing Systems},
   volume       = {34},
-  year         = {2021},
-  url          = {https://papers.nips.cc/paper_files/paper/2021/hash/26405399c51ad7b13b504e74eb7c696c-Abstract.html},
-  note         = {Verified via NeurIPS proceedings page and OpenReview page.}
+  year         = {2021}
 }
 
 @inproceedings{hester2018dqfd,
@@ -288,9 +199,7 @@
   booktitle    = {Proceedings of the Thirty-Second {AAAI} Conference on Artificial Intelligence},
   pages        = {3223--3230},
   year         = {2018},
-  doi          = {10.1609/aaai.v32i1.11757},
-  url          = {https://ojs.aaai.org/index.php/AAAI/article/view/11757},
-  note         = {Verified via AAAI proceedings page.}
+  doi          = {10.1609/aaai.v32i1.11757}
 }
 
 @inproceedings{tang2022factored,
@@ -298,9 +207,7 @@
   title        = {Leveraging Factored Action Spaces for Efficient Offline Reinforcement Learning in Healthcare},
   booktitle    = {Advances in Neural Information Processing Systems},
   volume       = {35},
-  year         = {2022},
-  url          = {https://proceedings.neurips.cc/paper_files/paper/2022/hash/dda7f9378a210c25e470e19304cce85d-Abstract-Conference.html},
-  note         = {Verified via NeurIPS proceedings page.}
+  year         = {2022}
 }
 
 @misc{gottesman2018evaluating,
@@ -309,25 +216,17 @@
   year         = {2018},
   howpublished = {arXiv preprint arXiv:1805.12298},
   eprint       = {1805.12298},
-  archivePrefix = {arXiv},
-  primaryClass = {cs.LG},
-  url          = {https://arxiv.org/abs/1805.12298},
-  note         = {Preprint / CoRR only; verified via arXiv, DBLP, and MIT Clinical ML page.}
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LG},
+  url          = {https://arxiv.org/abs/1805.12298}
 }
 
-
-% ---------- Tabular model-based RL (UCRL / PSRL) added 2026-05-23 ----------
-% Added by executor for paper_v1 Related Work / Discussion (§9 external validity),
-% which cite these to pre-empt the "small tabular MDPs are trivially solvable"
-% objection. Canonical, well-known references; metadata PENDING HUMAN VERIFICATION.
 @inproceedings{auer2008ucrl,
   author       = {Auer, Peter and Jaksch, Thomas and Ortner, Ronald},
   title        = {Near-optimal Regret Bounds for Reinforcement Learning},
   booktitle    = {Advances in Neural Information Processing Systems},
   volume       = {21},
-  year         = {2008},
-  url          = {https://papers.nips.cc/paper_files/paper/2008/hash/e4a6222cdb5b34375400904f03d8e6a5-Abstract.html},
-  note         = {UCRL2. % UNVERIFIED -- added by executor 2026-05-23; confirm authors/venue/year (cf. JMLR 2010 vol. 11 long version) before camera-ready.}
+  year         = {2008}
 }
 
 @inproceedings{osband2013psrl,
@@ -335,13 +234,9 @@
   title        = {(More) Efficient Reinforcement Learning via Posterior Sampling},
   booktitle    = {Advances in Neural Information Processing Systems},
   volume       = {26},
-  year         = {2013},
-  url          = {https://papers.nips.cc/paper_files/paper/2013/hash/6a5889bb0190d0211a991f47bb19a777-Abstract.html},
-  note         = {PSRL. % UNVERIFIED -- added by executor 2026-05-23; confirm authors/venue/year before camera-ready.}
+  year         = {2013}
 }
 
-% ---------- Action masking (SB3) + behavior-regularized offline RL, added 2026-05-23 ----------
-% Cited in Related Work; well-known refs, metadata to confirm before camera-ready.
 @article{raffin2021sb3,
   author       = {Raffin, Antonin and Hill, Ashley and Gleave, Adam and Kanervisto, Anssi and Ernestus, Maximilian and Dormann, Noah},
   title        = {Stable-Baselines3: Reliable Reinforcement Learning Implementations},
@@ -349,8 +244,7 @@
   volume       = {22},
   number       = {268},
   pages        = {1--8},
-  year         = {2021},
-  note         = {MaskablePPO is provided in the sb3-contrib companion library.}
+  year         = {2021}
 }
 
 @article{wu2019behavior,
