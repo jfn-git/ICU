@@ -1,0 +1,598 @@
+% =============================================================================
+% paper_v1.tex - ICU-Sepsis OOD-action study (NeurIPS 2026 format, DOUBLE-BLIND)
+%
+% v1 EXECUTOR FILL-IN, 2026-05-23. Derived from main.tex; Method + Experiments
+% reused, and Abstract / Introduction / Related Work / Discussion / Conclusion
+% prose written out. Blueprints: core_docs/paper_spec.md (read the top "v1
+% decisions" block, then 0.0/0.3/per-section), core_docs/spec.md (format).
+%
+% CROSS-ALGORITHM RESULTS: saved policies from the released experimental pipeline
+% are re-evaluated EXACTLY against the true dynamics via the saved-policy evaluation script, so every trained value is <= V*.
+%
+% TO COMPILE (Overleaf): drop neurips_2026.sty into the project. Anonymous
+% submission mode (do NOT pass [final]) auto-prints "Anonymous Author(s)" and
+% enables line numbers. The six PNGs live in submission/figures/ (graphicspath
+% below also looks in ./figures/).
+% ANONYMITY: no names / affiliations / real repo URLs anywhere.
+% =============================================================================
+\documentclass{article}
+\usepackage{neurips_2026}    
+\usepackage{float}          
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{enumitem} % for enumerate [leftmargin=...] options
+\usepackage{nicefrac}    
+% Self-contained: all figures live in ./figures/ (this folder).
+\graphicspath{{figures/}}
+
+\newcommand{\Adm}{\mathcal{A}}
+\newcommand{\dist}{\mathrm{dist}\text{-}V^\star}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{When Mean Imputation Hides Unsupported Actions:\\
+Diagnosing an Out-of-Distribution Action\\
+Failure Mode in the ICU-Sepsis Benchmark}
+
+\author{%
+  Anonymous Author(s)\\
+  Affiliation\\
+  \texttt{email}\\
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+ICU-Sepsis exposes a rare opportunity to audit offline-RL action-support failures
+exactly: although it is distilled from real ICU trajectories, it ships tabular
+dynamics and therefore allows exact evaluation against the optimal value
+$V^\star$. We use this property to test the benchmark's default \texttt{mean}
+imputation rule, which replaces every data-unsupported action with the average
+transition of the supported actions in that state. Although this rule is described
+as equivalent to choosing a random admissible action, we find that it creates a
+hidden failure mode for model-free RL: vanilla Q-learning selects unsupported
+actions in $\sim$87\% of states and reaches $J{=}0.785$, no better than the Random
+(0.780) and clinician (0.782) baselines and far below the optimal value
+($J^\star{=}0.875$).
+
+A component ablation localizes the mechanism. Masking unsupported actions only at
+deployment removes invalid deployed actions but leaves the learned $Q$-table
+corrupted, with $Q$-value leakage unchanged at $+0.46$. In contrast, restricting
+the behavior policy during training matches the full support mask and reduces the
+value gap from $0.090$ to $0.069$. Additional support-aware remedies---soft
+penalties, CQL-style conservatism, cross-algorithm checks, and a finite-data
+offline empirical-MDP study---support the same conclusion: the issue is not the
+final deployed action alone, but sampling and bootstrapping unsupported actions
+during learning. Our results are benchmark-internal, not clinical
+recommendations. The transferable takeaway is an exact-$V^\star$ auditing
+protocol: ICU-Sepsis results should report how inadmissible actions are handled,
+together with deployed-unsupported rate, value gap, and leakage diagnostics.
+\end{abstract}
+
+% =============================================================================
+\section{Introduction}
+\label{sec:intro}
+Offline medical reinforcement learning (RL) is shaped by uneven action support:
+some treatments are well represented in the logged data, while others are rarely
+or never observed in a given clinical state. How an RL benchmark handles these
+low-support actions is therefore not a harmless implementation detail. It can
+change what a learner samples, bootstraps from, and ultimately deploys.
+
+ICU-Sepsis \citep{choudhary2024icusepsis} is a useful testbed for this question
+because it is both clinically motivated and exactly evaluable. The benchmark is a
+tabular sepsis-treatment MDP distilled from MIMIC-III trajectories, and it ships
+its full transition dynamics. Unlike most medical RL settings, where policy
+quality must be estimated through noisy off-policy evaluation
+\citep{gottesman2019guidelines,gottesman2018evaluating}, ICU-Sepsis lets us
+compute the optimal value $V^\star$ and the exact value of any learned policy.
+We use this exact value not as a leaderboard target, but as a measurement
+instrument for diagnosing action-support failures.
+
+We focus on the benchmark's default \texttt{mean} imputation strategy. In each
+state, ICU-Sepsis identifies an admissible set $\Adm(s)$ of sufficiently supported
+actions. For every inadmissible action, the default strategy replaces its
+transition with the average transition over admissible actions. The benchmark
+motivates this as ``equivalent to choosing a random admissible action.'' We show
+that this equivalence hides a measurable cost: under the default, vanilla
+Q-learning deploys unsupported actions in $\sim$87\% of states and reaches
+$J{=}0.785$, essentially the Random (0.780) and clinician (0.782) baselines,
+despite an optimal value of $0.875$.
+
+The central finding is mechanistic. The obvious fix---mask unsupported actions
+only when extracting the final policy---is insufficient: it drives the deployed
+unsupported-action rate to zero but leaves the $Q$-table corrupted, with exact
+$Q$-value leakage still at $+0.46$. In our component ablation, the decisive
+intervention is instead \emph{behavior-level} support control: unsupported actions
+must be kept out of the training behavior that is sampled and bootstrapped. This
+behavior-only mask matches the full support mask and improves $\dist$ from
+$0.090$ to $0.069$.
+
+\paragraph{Contributions.}
+\begin{enumerate}[leftmargin=2em,itemsep=2pt,topsep=2pt]
+  \item \textbf{A hidden benchmark failure.} We show that ICU-Sepsis's default
+  mean-imputation rule makes unsupported actions appear average, causing vanilla
+  model-free agents to select them in $\sim$87\% of states while achieving only
+  random/clinician-level value (\S\ref{sec:failure}).
+  \item \textbf{A mechanism-level diagnosis.} A component ablation and exact
+  $Q$-value-leakage diagnostic show that the failure comes from behavior-level
+  sampling, not merely from the final deployed policy (\S\ref{sec:mechanism}).
+  \item \textbf{A support-aware auditing protocol.} Soft penalties, conservative
+  regularization, admissibility masking, cross-algorithm checks, and finite-data
+  offline experiments all support the same recommendation: ICU-Sepsis results
+  should report inadmissible-action handling explicitly, including deployed
+  unsupported rate, value gap to $V^\star$, and leakage/overestimation
+  diagnostics (\S\ref{sec:remedy}--\S\ref{sec:offline}).
+\end{enumerate}
+
+% =============================================================================
+\section{Related Work}
+\label{sec:related}
+\paragraph{Medical RL benchmarks.}
+Sepsis treatment has been a recurring testbed for RL in healthcare
+\citep{komorowski2018aiclinician,raghu2017continuous}, but learning from logged
+clinical data is hampered by unknown dynamics and unreliable evaluation.
+ICU-Sepsis \citep{choudhary2024icusepsis} and related curated benchmarks
+\citep{mimic_sepsis_arxiv2510_24500} distill such data into reproducible MDPs.
+Our work differs by treating such a benchmark as a \emph{measurement instrument}
+for a specific pathology---using its exact $V^\star$ to audit how data-unsupported
+actions are handled---rather than as a leaderboard to top.
+
+\paragraph{Offline RL and OOD actions.}
+The danger of bootstrapping from out-of-distribution actions, and the resulting
+value overestimation, is the motivating problem for batch-constrained,
+behavior-regularized, and conservative offline methods
+\citep{fujimoto2019bcq,kumar2019bear,kumar2020cql}, with pessimism shown to be
+provably and practically effective \citep{rashidinejad2021pessimism,jin2021pessimism}.
+Our work differs by measuring this recognized pathology \emph{exactly} against
+ground-truth $V^\star$ in an environment distilled from real data, isolating where
+in the learning update the failure originates.
+
+\paragraph{Invalid / forbidden action masking.}
+Masking unavailable actions is standard in deep RL, both as an analysis target in
+policy-gradient methods \citep{huang2021masking} and as a way to learn from
+forbidden actions \citep{seurin2020forbidden}, and is available off-the-shelf as
+maskable policies \citep{raffin2021sb3}. We
+do not introduce masking; instead, a component ablation shows precisely \emph{where}
+it must act---at the behavior level---and that masking only the target or only the
+deployed policy is insufficient.
+
+\paragraph{Tabular model-based RL.}
+For small tabular MDPs, optimism- and posterior-sampling-based model-based methods
+are known to be near-optimal \citep{auer2008ucrl,osband2013psrl}. We
+\emph{acknowledge} that a $716$-state model-based agent reaching $V^\star$ is
+expected, not a feat; we therefore frame our model-based remedy as the endpoint of
+a spectrum that demonstrates the gap is an artifact of mean-imputation, and our
+contribution is the diagnosis and mechanism, not a regret or optimality result.
+
+\paragraph{Reward shaping and behavior-constrained learning.}
+Potential-based reward shaping leaves the optimal policy invariant
+\citep{ng1999reward}, which justifies our supplementary severity-based shaping;
+constraining a learner toward a behavior policy is likewise a standard offline-RL
+device \citep{wu2019behavior,nair2020awac}.
+Our work differs by using these only as supplementary points on the remedy
+spectrum, with admissibility---not shaping---as the load-bearing structure.
+
+\paragraph{Evaluation pitfalls in healthcare RL.}
+Off-policy evaluation in observational health settings is noisy and easily
+misleading \citep{gottesman2019guidelines,gottesman2018evaluating}. Our work
+differs by sidestepping OPE entirely: exact $V^\star$ makes selection rates,
+value gaps, and overestimation measurable in a way real cohorts do not allow.
+
+% =============================================================================
+\section{Background: ICU-Sepsis and Mean Imputation}
+\label{sec:background}
+ICU-Sepsis \citep{choudhary2024icusepsis} is a tabular MDP with $|\mathcal{S}|{=}716$
+states (713 patient states plus death, survival, $s_\infty$) and $|\mathcal{A}|{=}25$
+actions (5 fluid $\times$ 5 vasopressor levels). The reward is a survival indicator
+(${+}1$ on transition into the survival state, $0$ otherwise) and $\gamma{=}1$, so
+episodes are short and the undiscounted return equals the survival probability;
+consequently $V^\star(s)$ is exactly the maximum achievable survival probability
+from $s$. Because the full transition model is shipped with the benchmark, we
+compute $V^\star$ and the exact value $V^\pi$ of any policy by value iteration,
+avoiding off-policy estimation entirely.
+
+\paragraph{Admissibility and the \texttt{mean} strategy.}
+Each state has an \emph{admissible} action set $\Adm(s)$: actions taken at least
+$\tau{=}20$ times in the source cohort, so their transition estimates are reliable.
+The remaining actions are \emph{inadmissible} (data-unsupported); admissible sets
+are small (median 4, mean 3.2, of 25). For an inadmissible action $a\notin\Adm(s)$,
+the benchmark's default \texttt{mean} strategy defines the transition as the
+unweighted average over admissible actions:
+\begin{equation}
+\label{eq:mean}
+P(s'\mid s,a) \;=\; \frac{1}{|\Adm(s)|}\sum_{a'\in\Adm(s)} \zeta(s,a',s'),
+\qquad a\notin\Adm(s),
+\end{equation}
+where $\zeta$ is the empirical admissible-action transition. We verified
+Eq.~\eqref{eq:mean} holds exactly in the shipped dynamics (every inadmissible row
+equals the admissible mean to $7\times10^{-16}$). The benchmark motivates this as
+``equivalent to choosing a random admissible action'' \citep{choudhary2024icusepsis};
+\S\ref{sec:failure} shows this equivalence is precisely where the cost arises.
+
+% =============================================================================
+\section{Diagnostic Protocol and Support Controls}
+\label{sec:method}
+We frame inadmissible actions as out-of-distribution (OOD) / low-support actions
+and use ICU-Sepsis's known dynamics to separate two questions: \emph{how large is
+the hidden failure?} and \emph{where in the learning loop does it arise?} The
+mechanism study uses tabular $Q:\mathcal{S}\times\mathcal{A}\to\mathbb{R}$
+updates so that the effect of support control is not confounded by function
+approximation. Broader agents and model-based results are used only as breadth
+checks.
+
+\paragraph{Exact diagnostics.}
+We report three main diagnostics. First, the distance to optimal value is
+$\dist(\pi)=\mathbb{E}_{s\sim d_0}[V^\star(s)-V^\pi(s)]$, where $V^\pi$ is
+computed exactly by value iteration. Second, the deployed unsupported-action rate
+is the fraction of non-terminal states in which the greedy policy selects
+$a\notin\Adm(s)$. Third, $Q$-value leakage measures whether unsupported actions
+are over-valued in the learned table:
+\[
+\frac{1}{|\mathcal{S}_{\mathrm{nt}}|}\sum_s
+\left[\max_{a\notin\Adm(s)}Q(s,a)-\max_{a\in\Adm(s)}Q(s,a)\right].
+\]
+Positive leakage means unsupported actions are valued above the best supported
+action on average. In the offline finite-data study we additionally report value
+overestimation, defined as the empirical model's self-estimated value minus the
+policy's exact value under the true benchmark dynamics.
+
+\paragraph{Support-control interventions.}
+The key ablation decomposes admissibility masking into three locations:
+\textbf{behavior} masking restricts $\epsilon$-greedy exploration to $\Adm(s)$;
+\textbf{target} masking restricts the Bellman backup maximum to $\Adm(s')$; and
+\textbf{policy} masking restricts only the final greedy policy to $\Adm(s)$. Full
+masking enables all three. This decomposition lets us test whether the pathology
+comes from training-time sampling, bootstrapping, or final deployment.
+
+We also include softer support-aware remedies as supporting comparisons. A
+\emph{support penalty} subtracts $\lambda$ when an inadmissible action is sampled,
+$r'(s,a,s')=r-\lambda\mathbb{1}[a\notin\Adm(s)]$. A \emph{CQL-style} tabular
+regularizer nudges $Q(s,\cdot)$ toward the admissible support; this is not a full
+CQL implementation, but a conservative value-suppression test. Finally,
+AA-MBRL serves as a model-based endpoint: it estimates an empirical transition
+model and periodically solves value iteration restricted to $\Adm(s)$. We use
+AA-MBRL only to show that the gap is largely an artifact of ignoring support and
+model structure, not as a proposed algorithm or a fair model-free comparison.
+
+% =============================================================================
+\section{Experiments}
+\label{sec:experiments}
+\paragraph{Setup.} Unless stated otherwise, mechanism runs use 5 seeds,
+$5{\times}10^4$ episodes, $\alpha{=}0.1$, $\gamma{=}1$, $\epsilon$ annealed
+$1.0{\to}0.05$ over $10^4$ episodes. The cross-algorithm and model-based results
+(Table~\ref{tab:merged}) use $5{\times}10^5$ episodes; \emph{each table states its
+episode budget}, and the two budgets are bridged by the fact that vanilla
+Q-learning stays at the baseline level at both ($J{=}0.785$ at $5{\times}10^4$;
+$0.787$ exact at $5{\times}10^5$, Table~\ref{tab:merged}), so the failure is not
+under-training. We report mean $\pm$ std (per-seed scatter in the
+appendix); we do not rest conclusions on small survival differences but on
+large-support diagnostics.
+
+\paragraph{Baselines reproduce the benchmark (Table~\ref{tab:baselines}).}
+Exact $d_0$-weighted values match the published Random/Expert/Optimal numbers,
+confirming the ruler is calibrated; note also that survival values live in a narrow
+$0.78$--$0.875$ band, motivating the more sensitive $\dist$.
+
+\begin{table}[t]
+\centering
+\caption{Exact baseline reproduction ($d_0$-weighted policy value $=$ survival
+rate). Exact value-iteration computations (budget-independent).}
+\label{tab:baselines}
+\begin{tabular}{lccc}
+\toprule
+ & Random & Clinician (Expert) & Optimal ($V^\star$) \\
+\midrule
+$J(\pi)$ & 0.780 & 0.782 & 0.875 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The hidden failure (Claim 1)}
+\label{sec:failure}
+Under the default \texttt{mean} strategy, vanilla Q-learning deploys inadmissible
+actions in $\sim$87\% of states and reaches $J(\pi){=}0.785$ and
+$\dist{=}0.090$ --- essentially the Random (0.780) / clinician (0.782) baselines.
+Crucially, this is \emph{not} a mere labeling artifact: because an inadmissible
+action behaves like a random admissible one (Eq.~\eqref{eq:mean}), selecting it
+implements an average-over-admissible transition---competitive under bootstrapping
+but unable to recover the best admissible action---which induces a measurable value
+gap to $V^\star$. Survival rate alone is not diagnostic (the benchmark reports only
+return/length/convergence); $\dist$ and support diagnostics expose the mechanism. Admissibility control recovers
+$J{=}0.806$, $\dist{=}0.069$ (at $5{\times}10^4$; consistent with the exactly-evaluated $5{\times}10^5$ AA-Q policy, $J{=}0.801$/gap $0.074$, Table~\ref{tab:merged}). The failure is not specific to Q-learning or to a
+small training budget: it persists across Sarsa/Q/DQN/PPO, and Q-learning still sits at the
+baseline level ($J{=}0.787$ exact) at $5{\times}10^5$ episodes (Table~\ref{tab:merged}).
+
+\subsection{Mechanism: where the failure lives (Claim 2)}
+\label{sec:mechanism}
+A component ablation (Table~\ref{tab:ablation}; Fig.~\ref{fig:ablation}) localizes
+the failure to behavior-level sampling. \emph{In this ablation}, masking behavior
+alone matches the full mask and is the only component that clears the $Q$-value
+leakage---necessary and sufficient \emph{to reach the full-mask result}. The other
+components help only marginally: masking only the target leaves $\sim$77\% deployed
+unsupported, and masking only the deployed policy zeroes deployment but leaves the
+$Q$-table corrupted (leakage unchanged at $+0.46$). The $Q$-value leakage flips from $+0.46$ (vanilla) to
+$-0.80$ (behavior/full mask), showing unsupported actions become competitive only
+because they are sampled and updated under mean-imputed dynamics (Fig.~\ref{fig:exactcurve}
+traces the same ordering over training). The sign of the
+leakage is informative: a large \emph{negative} value (e.g.\ CQL $\kappa{=}1$:
+$-2.95$) signals \emph{over}-suppression rather than a better policy, which is why
+CQL ($\dist{=}0.080$) still trails hard masking ($0.069$) despite its strongly
+negative leakage. This is the hero result of the paper; the breadth experiments
+below support its generality.
+
+\begin{table}[t]
+\centering
+\caption{Component ablation (5 seeds, $5{\times}10^4$ episodes). \emph{In this
+ablation}, behavior masking matches the full mask and is the only component that
+clears $Q$-value leakage.}
+\label{tab:ablation}
+\begin{tabular}{lcccl}
+\toprule
+Variant & $\dist\,\downarrow$ & Deploy unsupp. & Q-leakage & Reading \\
+\midrule
+vanilla            & 0.090 & 0.87 & $+0.46$ & unsupported over-valued \\
+target-only        & 0.085 & 0.77 & $+0.07$ & backup alone insufficient \\
+policy-only        & 0.083 & 0.00 & $+0.46$ & band-aid; $Q$ corrupted \\
+CQL ($\kappa{=}1$) & 0.080 & 0.00 & $-2.95$ & best \emph{soft} remedy \\
+\textbf{behavior-only} & \textbf{0.069} & 0.00 & $-0.80$ & necessary \& sufficient \\
+full mask          & 0.069 & 0.00 & $-0.80$ & $=$ behavior-only \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% --- HERO FIGURE: highest priority. Do not let the ablation table crowd it out. ---
+\begin{figure}[tb]\centering
+\includegraphics[width=0.95\linewidth]{component_ablation.png}
+\caption{\textbf{The mechanism (hero figure).} Component ablation (left) and
+$Q$-value-leakage mechanism (right): masking \emph{behavior} matches the full mask
+and is the only component that clears the corruption, while masking only the target
+or only the deployed policy does not; leakage flips from $+0.46$ to $-0.80$
+(5 seeds, $5{\times}10^4$ episodes).}
+\label{fig:ablation}
+\end{figure}
+
+\subsection{Remedy spectrum, online and cross-algorithm (Claim 3a)}
+\label{sec:remedy}
+\paragraph{From soft to hard (single-algorithm, $5{\times}10^4$ episodes).}
+Support penalties trace a support--value trade-off: larger $\lambda$ drives deployed
+unsupported actions to $0$ (at $\lambda{=}1.0$) but $\dist$ plateaus ($\approx
+0.085$) and is Pareto-dominated by hard masking ($0.069$); CQL-conservatism is the
+best soft remedy ($0.080$) but still trails, with a $\kappa$ sweet spot ($\kappa{=}1$
+helps, $\kappa{=}2$ over-suppresses to $0.089$) (App.~Fig.~\ref{fig:spectrum}).
+
+\begin{figure}[tb]\centering
+\includegraphics[width=0.60\linewidth]{exact_dist_curve.png}
+\caption{Exact learning curves: distance-to-$V^\star$ of each policy snapshot vs.\
+training episodes (5 seeds, $\pm$1 SE), computed exactly against $V^\star$ rather than
+from rollout return. Vanilla plateaus far from optimal; deployment-only masking barely
+improves dist-$V^\star$; CQL-style conservatism helps; full/behavior masking reaches
+the best plateau --- the same ordering as the component ablation
+(Table~\ref{tab:ablation}), now traced over training.}
+\label{fig:exactcurve}
+\end{figure}
+
+\paragraph{Across algorithms and a model-based endpoint ($5{\times}10^5$ episodes).}
+Table~\ref{tab:merged} reports the cross-algorithm picture, evaluated \emph{exactly}.
+Admissibility masking improves every baseline---strictly positive on all four and
+larger for the stronger baselines: exact $\dist$ gains of $+0.013$ (Sarsa), $+0.014$
+(Q-learning), $+0.027$ (DQN), and $+0.027$ (PPO).\footnote{Policies are from the
+released experimental pipeline; we re-evaluate each exactly against the true dynamics, so every trained value is $\le V^\star$. On the benchmark's rollout
+metric the same masking effect is significant ($p\le0.013$) on the three stronger
+baselines.} At the model-based endpoint, AA-MBRL reaches exact $J{=}0.874$ (gap
+$0.001$). We read this not as ``winning'' but as confirmation that the gap is an
+artifact of mean-imputation: even the most naive use of the shipped model structure
+nearly closes it, and on a $716$-state tabular MDP a model-based agent reaching
+$V^\star$ is expected \citep{auer2008ucrl,osband2013psrl}.
+
+\begin{table}[t]
+\centering
+\caption{Cross-algorithm breadth, \emph{exactly} evaluated. Policies are from the
+released experimental pipeline ($5{\times}10^5$ episodes, 5 seeds); we
+re-evaluate each saved policy exactly against the true dynamics ($V^\pi$ by value
+iteration), on the same exact axis as the rest of the paper, so every trained value is
+$\le V^\star$ --- unlike the benchmark's rollout metric, under which some near-optimal
+cells spuriously exceed it. ``Deploy unsupp.'' is the deployed-state inadmissible-action
+rate. The model-based endpoint AA-MBRL uses an online empirical model and is
+\emph{not} a fair model-free comparison---supporting breadth showing the gap is an
+artifact of ignoring support/model structure, not a headline result.}
+\label{tab:merged}
+\begin{tabular}{llccc}
+\toprule
+Group & Method & Exact $J(\pi)\uparrow$ & $\dist\downarrow$ & Deploy unsupp. \\
+\midrule
+Reference & Random            & 0.780 & 0.095 & --- \\
+          & Clinician         & 0.782 & 0.093 & --- \\
+          & Optimal $V^\star$ & 0.875 & 0.000 & --- \\
+\midrule
+No prior  & Sarsa       & 0.789 & 0.087 & 0.83 \\
+          & Q-learning  & 0.787 & 0.088 & 0.85 \\
+          & DQN         & 0.799 & 0.076 & 0.79 \\
+          & PPO         & 0.842 & 0.033 & 0.58 \\
+\midrule
+$+$P1 mask & AA-Sarsa   & 0.802 & 0.073 & 0.00 \\
+          & AA-Q        & 0.801 & 0.074 & 0.00 \\
+          & AA-DQN      & 0.826 & 0.050 & 0.00 \\
+          & AA-PPO      & 0.869 & 0.006 & 0.00 \\
+\midrule
+$+$P1$+$P2 & AA-MBRL    & 0.874 & 0.001 & 0.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Remedy spectrum, offline finite-data (Claim 3b)}
+\label{sec:offline}
+We collect $N$ transitions under the clinician behavior policy, build the
+certainty-equivalent empirical model, and compare \emph{naive} (mean-impute unseen
+actions), \emph{pessimistic} VI-LCB \citep{jin2021pessimism,rashidinejad2021pessimism},
+and \emph{admissibility-masked} value iteration --- all evaluated exactly against
+the true $V^\star$ (Fig.~\ref{fig:offline}). The support each method uses differs:
+pessimism \emph{estimates} support from the $N$ samples (a count-based
+lower-confidence bonus over observed actions), whereas masking uses the benchmark's
+\emph{oracle} admissible set $\Adm(s)$; the masked cell therefore isolates the value
+of known support labels, and pessimism the realistic estimate-from-data case. Naive overestimates its own value
+($+0.21$ at $N{=}10^5$) and its realized policy \emph{stagnates}
+($\dist\approx0.093$ regardless of $N$); pessimism is calibrated ($\approx0$) and
+improves ($\to0.069$); masking removes unsupported actions and reaches $0.065$.
+Exact $V^\star$ is what makes this overestimation pathology measurable --- normally
+impossible in healthcare RL \citep{gottesman2019guidelines}.
+
+\begin{figure}[tb]\centering
+\includegraphics[width=0.95\linewidth]{offline_datasize.png}
+\caption{Offline empirical-MDP sweep: naive mean-imputation overestimates its own
+value and stagnates, while pessimism and masking are calibrated and improve with
+data (5 seeds; exact evaluation against $V^\star$).}
+\label{fig:offline}
+\end{figure}
+
+\subsection{Supplementary robustness checks}
+\label{sec:supp}
+We move the remaining defenses and robustness checks to Appendix~\ref{app:figs} to
+keep the main text focused on the mechanism. In brief, projecting the clinician
+prior onto $\Adm(s)$ removes most unsupported deployment while preserving value;
+the failure is specific to the \texttt{mean} strategy rather than the
+\texttt{terminate} strategy; ICU-Sepsis has no dead-end states under the exact
+model; and severity or clinician-prior composition does not materially change the
+main conclusion under exact evaluation. These checks support, but are not needed
+for, the central claim that behavior-level support control is the load-bearing
+intervention.
+
+% =============================================================================
+\section{Discussion}
+\label{sec:discussion}
+\paragraph{Why survival rate hides the failure.}
+Survival values in ICU-Sepsis occupy a narrow range: Random and clinician policies
+are already around $0.78$, while the optimal value is $0.875$. When unsupported
+actions are mean-imputed to behave like random admissible actions, a policy can
+achieve a plausible survival rate while still choosing unsupported actions in most
+states. This is why survival rate alone is not diagnostic. The mechanism is only
+visible when value is paired with support-aware diagnostics such as $\dist$,
+deployed unsupported-action rate, and $Q$-value leakage.
+
+\paragraph{What transfers beyond the benchmark.}
+Our numerical gap-closing results are benchmark-internal. They rely on the fact
+that ICU-Sepsis treats its estimated tabular dynamics as ground truth and exposes
+an exact $V^\star$; real clinical cohorts do not provide such a ruler. The
+transferable lesson is therefore not that admissibility masking is a deployable
+clinical policy, but that data-unsupported actions should be handled explicitly
+and pessimistically rather than silently mean-imputed. The finite-data offline
+study reinforces this point: naive mean imputation overestimates its own value,
+whereas pessimism and masking remain calibrated.
+
+\paragraph{Benchmark guidance.}
+Future ICU-Sepsis reports should make action-support handling explicit. At minimum,
+we recommend reporting the imputation or masking strategy, the deployed
+unsupported-action rate, the exact value gap to $V^\star$, and either $Q$-value
+leakage or offline value overestimation. These metrics turn a hidden benchmark
+default into an auditable modeling choice.
+
+\paragraph{Significance for offline medical RL.}
+Offline medical RL learns from logged data with uneven action coverage. Our study
+uses ICU-Sepsis as a controlled measurement instrument to show how a seemingly
+benign imputation rule can change learned behavior. The result is a methodological
+caution and an evaluation protocol, not a clinical recommendation.
+
+% =============================================================================
+\section{Limitations}
+\label{sec:limitations}
+Our study is benchmark-internal and tabular: ``unsupported'' means insufficient data
+support, not medical incorrectness, and we make no clinical claims. Whether the
+mean-imputation failure and the behavior-masking fix transfer to function-approximation
+/ continuous / deep settings is untested; in particular we do not evaluate SAC or
+genuinely deep/continuous agents, and the offline empirical-MDP sweep is a step
+toward the realistic finite-data regime but remains tabular. We use 5 seeds (effect
+sizes for the support diagnostics are large, e.g.\ 87\%$\to$0\% deployed unsupported
+and leakage $+0.46\to-0.80$). The clinician policy itself is not fully
+admissibility-respecting, a property of the benchmark we inherit.
+
+% =============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+ICU-Sepsis's default mean-imputation makes data-unsupported actions look average, so
+model-free agents adopt them at a value cost that survival rate hides. Using the
+benchmark's exact $V^\star$, we localize the failure to behavior-level sampling,
+explain it through an exact $Q$-value-leakage diagnostic, and compare support-aware
+remedies online, across algorithms, and offline. Inadmissible-action handling should
+be reported, not left to a hidden default: the gap is largely an artifact of
+mean-imputation, and the benchmark already exposes the support information needed to
+diagnose and mitigate it.
+
+% =============================================================================
+\paragraph{Reproducibility statement.}
+All mechanism diagnostics reproduce from the released one-command scripts---exact value
+iteration on the shipped ICU-Sepsis dynamics (metric definitions in \S\ref{sec:method});
+the cross-algorithm and model-based results (Table~\ref{tab:merged}) are exact
+evaluations of saved policies from the released pipeline against the true dynamics with
+the same script.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\clearpage
+% =============================================================================
+\appendix
+\section{Supplementary figures}
+\label{app:figs}
+This appendix collects the cross-algorithm rollout-return learning curves
+(Fig.~\ref{fig:rollouttiers}), the penalty-sweep remedy figure (Fig.~\ref{fig:spectrum}),
+and the figures for the supplementary analyses discussed in \S\ref{sec:supp} (expert
+projection, robustness across algorithms and strategies, and dead-end structure).
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.95\linewidth]{fig1_return_tiers.png}
+\caption{\textbf{Benchmark rollout-return learning curves (cross-algorithm tiers).}
+Per-tier average return---the benchmark's standard metric (last-$1000$-episode mean)---vs.\
+training episodes ($5{\times}10^5$ episodes, 5 seeds, $\pm$1 SE; dashed: oracle $0.875$,
+dotted: random/clinician $0.78$). Shown for comparability with prior benchmark
+reporting; this \emph{rollout} axis differs from the exact $V^\pi$ axis used in the
+main text (cf.\ Fig.~\ref{fig:exactcurve} and Table~\ref{tab:merged}), and under it
+some near-optimal cells can exceed $V^\star$ by sampling noise. The corresponding
+final policies are exact-evaluated against the true dynamics in
+Table~\ref{tab:merged}.}
+\label{fig:rollouttiers}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.85\linewidth]{penalty_tradeoff.png}
+\caption{Remedy spectrum (penalty sweep): the support--value trade-off; larger
+penalties remove unsupported actions but plateau in $\dist$, and hard masking is
+Pareto-best (5 seeds, $5{\times}10^4$ episodes).}
+\label{fig:spectrum}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.6\linewidth]{expert_prior_curve.png}
+\caption{Expert-guided exploration; admissible projection drives deployed
+unsupported actions to $0.5\%$ while preserving value (5 seeds, $5{\times}10^4$
+episodes).}
+\label{fig:expert}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.95\linewidth]{robustness.png}
+\caption{Robustness across algorithms (Q/SARSA/Dyna-Q) and imputation strategies
+(\texttt{mean}/\texttt{terminate}); masking is best and most stable throughout
+(5 seeds, $5{\times}10^4$ episodes).}
+\label{fig:robust}
+\end{figure}
+
+\begin{figure}[H]\centering
+\includegraphics[width=0.95\linewidth]{deadend_structure.png}
+\caption{Dead-end analysis: ICU-Sepsis has no dead-ends ($\min_s V^\star(s){=}0.198$;
+427/713 states secured with $V^\star{>}0.9$).}
+\label{fig:deadend}
+\end{figure}
+
+% NeurIPS paper checklist (optional; not required by the course). To include it,
+% add a checklist.tex to this folder and uncomment the two lines below.
+% \newpage
+% \input{checklist.tex}
+\end{document}

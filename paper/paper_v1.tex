@@ -305,33 +305,18 @@ value; and agreement with the clinician policy.
 \label{sec:experiments}
 \paragraph{Setup.} Unless stated otherwise, mechanism runs use 5 seeds,
 $5{\times}10^4$ episodes, $\alpha{=}0.1$, $\gamma{=}1$, $\epsilon$ annealed
-$1.0{\to}0.05$ over $10^4$ episodes. The cross-algorithm and model-based results
-(Table~\ref{tab:merged}) use $5{\times}10^5$ episodes; \emph{each table states its
-episode budget}, and the two budgets are bridged by the fact that vanilla
-Q-learning stays at the baseline level at both ($J{=}0.785$ at $5{\times}10^4$;
-$0.787$ exact at $5{\times}10^5$, Table~\ref{tab:merged}), so the failure is not
-under-training. We report mean $\pm$ std (per-seed scatter in the
-appendix); we do not rest conclusions on small survival differences but on
-large-support diagnostics.
+$1.0{\to}0.05$ over $10^4$ episodes; cross-algorithm and model-based results
+(Table~\ref{tab:merged}) use $5{\times}10^5$. Vanilla Q-learning stays at the
+baseline level at both budgets ($J{=}0.785$ at $5{\times}10^4$, $0.787$ exact at
+$5{\times}10^5$), so the failure is not under-training. We report mean $\pm$ std
+(per-seed scatter in the appendix) and rest conclusions on large-support
+diagnostics, not small survival differences.
 
-\paragraph{Baselines reproduce the benchmark (Table~\ref{tab:baselines}).}
-Exact $d_0$-weighted values match the published Random/Expert/Optimal numbers,
-confirming the ruler is calibrated; note also that survival values live in a narrow
-$0.78$--$0.875$ band, motivating the more sensitive $\dist$.
-
-\begin{table}[t]
-\centering
-\caption{Exact baseline reproduction ($d_0$-weighted policy value $=$ survival
-rate). Exact value-iteration computations (budget-independent).}
-\label{tab:baselines}
-\begin{tabular}{lccc}
-\toprule
- & Random & Clinician (Expert) & Optimal ($V^\star$) \\
-\midrule
-$J(\pi)$ & 0.780 & 0.782 & 0.875 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\paragraph{Baselines reproduce the benchmark.}
+Our exact $d_0$-weighted values match the published Random/Expert/Optimal survival
+rates ($0.780$/$0.782$/$0.875$; the Reference rows of Table~\ref{tab:merged}),
+confirming the ruler is calibrated; these values live in a narrow $0.78$--$0.875$
+band, motivating the more sensitive $\dist$.
 
 \subsection{The hidden failure (Claim 1)}
 \label{sec:failure}
@@ -344,7 +329,7 @@ implements an average-over-admissible transition---competitive under bootstrappi
 but unable to recover the best admissible action---which induces a measurable value
 gap to $V^\star$. Survival rate hides this (the benchmark reports only
 return/length/convergence); $\dist$ exposes it. Admissibility control recovers
-$J{=}0.806$, $\dist{=}0.069$ (at $5{\times}10^4$; consistent with the exactly-evaluated $5{\times}10^5$ AA-Q policy, $J{=}0.801$/gap $0.074$, Table~\ref{tab:merged}). The failure is not specific to Q-learning or to a
+$J{=}0.806$, $\dist{=}0.069$ (at $5{\times}10^4$; cf.\ the exact $5{\times}10^5$ AA-Q policy, $J{=}0.801$, Table~\ref{tab:merged}). The failure is not specific to Q-learning or to a
 small training budget: it persists across Sarsa/Q/DQN/PPO, and Q-learning still sits at the
 baseline level ($J{=}0.787$ exact) at $5{\times}10^5$ episodes (Table~\ref{tab:merged}).
 
@@ -369,7 +354,7 @@ below support its generality.
 \begin{table}[t]
 \centering
 \caption{Component ablation (5 seeds, $5{\times}10^4$ episodes). \emph{In this
-ablation}, behavior masking is necessary and sufficient (matches the full mask).}
+ablation}, behavior masking matches the full mask and is the only component that clears Q-value leakage.}
 \label{tab:ablation}
 \begin{tabular}{lcccl}
 \toprule
@@ -385,9 +370,10 @@ full mask          & 0.069 & 0.00 & $-0.80$ & $=$ behavior-only \\
 \end{tabular}
 \end{table}
 
-% --- HERO FIGURE: highest priority; do not shrink or let Table 2 crowd it out. ---
-\begin{figure}[t]\centering
-\includegraphics[width=0.95\linewidth]{component_ablation.png}
+% --- HERO FIGURE: highest priority. 0.90 width (nudged up from the 0.85 trim now
+% that float placement freed room). Do not let the ablation table crowd it out. ---
+\begin{figure}[tb]\centering
+\includegraphics[width=0.90\linewidth]{component_ablation.png}
 \caption{\textbf{The mechanism (hero figure).} Component ablation (left) and
 $Q$-value-leakage mechanism (right): masking \emph{behavior} is necessary and
 sufficient (it matches the full mask), while masking only the target or only the
@@ -405,8 +391,8 @@ unsupported actions to $0$ (at $\lambda{=}1.0$) but $\dist$ plateaus ($\approx
 best soft remedy ($0.080$) but still trails, with a $\kappa$ sweet spot ($\kappa{=}1$
 helps, $\kappa{=}2$ over-suppresses to $0.089$) (App.~Fig.~\ref{fig:spectrum}).
 
-\begin{figure}[t]\centering
-\includegraphics[width=0.72\linewidth]{exact_dist_curve.png}
+\begin{figure}[tb]\centering
+\includegraphics[width=0.60\linewidth]{exact_dist_curve.png}
 \caption{Exact learning curves: distance-to-$V^\star$ of each policy snapshot vs.\
 training episodes (5 seeds, $\pm$1 SE), computed exactly against $V^\star$ rather than
 from rollout return. Vanilla plateaus far from optimal; deployment-only masking barely
@@ -433,14 +419,13 @@ $V^\star$ is expected \citep{auer2008ucrl,osband2013psrl}.
 \begin{table}[t]
 \centering
 \caption{Cross-algorithm breadth, \emph{exactly} evaluated. Policies are from the
-teammate runs ($5{\times}10^5$ episodes, 5 seeds, committed in the released repo); we
-re-evaluate each saved policy exactly against the true dynamics ($V^\pi$ by value
-iteration), on the same exact axis as the rest of the paper, so every trained value is
-$\le V^\star$ --- unlike the benchmark's rollout metric, under which some near-optimal
-cells spuriously exceed it. ``Deploy unsupp.'' is the deployed-state inadmissible-action
-rate. The model-based endpoint AA-MBRL uses an online empirical model and is
-\emph{not} a fair model-free comparison---supporting breadth showing the gap is an
-artifact of ignoring support/model structure, not a headline result.}
+teammate runs ($5{\times}10^5$ episodes, 5 seeds, committed in the released repo),
+re-evaluated against the true dynamics ($V^\pi$ by value iteration), so every trained
+value is $\le V^\star$---unlike the benchmark's rollout metric, under which some
+near-optimal cells spuriously exceed it. ``Deploy unsupp.'' is the deployed
+inadmissible-action rate. The model-based endpoint AA-MBRL uses an online empirical
+model and is \emph{not} a fair model-free comparison---supporting breadth, not a
+headline result.}
 \label{tab:merged}
 \begin{tabular}{llccc}
 \toprule
@@ -471,19 +456,19 @@ We collect $N$ transitions under the clinician behavior policy, build the
 certainty-equivalent empirical model, and compare \emph{naive} (mean-impute unseen
 actions), \emph{pessimistic} VI-LCB \citep{jin2021pessimism,rashidinejad2021pessimism},
 and \emph{admissibility-masked} value iteration --- all evaluated exactly against
-the true $V^\star$ (Fig.~\ref{fig:offline}). The support each method uses differs:
-pessimism \emph{estimates} support from the $N$ samples (a count-based
-lower-confidence bonus over observed actions), whereas masking uses the benchmark's
-\emph{oracle} admissible set $\Adm(s)$; the masked cell therefore isolates the value
-of known support labels, and pessimism the realistic estimate-from-data case. Naive overestimates its own value
+the true $V^\star$ (Fig.~\ref{fig:offline}). The two differ in support: pessimism
+\emph{estimates} it from the $N$ samples (a count-based lower-confidence bonus over
+observed actions), whereas masking uses the benchmark's \emph{oracle} admissible set
+$\Adm(s)$---so masking isolates the value of known support labels, pessimism the
+realistic estimate-from-data case. Naive overestimates its own value
 ($+0.21$ at $N{=}10^5$) and its realized policy \emph{stagnates}
 ($\dist\approx0.093$ regardless of $N$); pessimism is calibrated ($\approx0$) and
 improves ($\to0.069$); masking removes unsupported actions and reaches $0.065$.
 Exact $V^\star$ is what makes this overestimation pathology measurable --- normally
 impossible in healthcare RL \citep{gottesman2019guidelines}.
 
-\begin{figure}[t]\centering
-\includegraphics[width=0.78\linewidth]{offline_datasize.png}
+\begin{figure}[tb]\centering
+\includegraphics[width=1.0\linewidth]{offline_datasize.png}
 \caption{Offline empirical-MDP sweep: naive mean-imputation overestimates its own
 value and stagnates, while pessimism and masking are calibrated and improve with
 data (5 seeds; exact evaluation against $V^\star$).}
@@ -533,11 +518,11 @@ diagnostics ($\dist$, deployed-unsupported rate, $Q$-leakage) are needed to expl
 
 \paragraph{Why a known-dynamics benchmark.}
 Exact $V^\star$ is a \emph{measurement instrument}, not an optimization claim. The
-OOD-action pathology---and the value overestimation it induces---is a general and well-recognized property of offline
-RL \citep{kumar2020cql,kumar2019bear}; ICU-Sepsis simply lets us measure it cleanly,
-sidestepping the noisy off-policy estimation that real cohorts force
-\citep{gottesman2019guidelines}. We make no claim that the benchmark is more
-realistic than real data---only that it is a particularly clean ruler.
+OOD-action pathology and the overestimation it induces is a well-recognized property
+of offline RL \citep{kumar2020cql,kumar2019bear}; ICU-Sepsis simply lets us measure
+it cleanly, sidestepping the noisy off-policy estimation real cohorts force
+\citep{gottesman2019guidelines}. We claim not that the benchmark is more realistic
+than real data, only that it is a particularly clean ruler.
 
 \paragraph{Difference from the benchmark's own perturbation check.}
 ICU-Sepsis includes a perturbation analysis (Appendix~B.3 of
@@ -574,11 +559,11 @@ exact-$V^\star$ auditing protocol; the gap-closing numbers remain a property of 
 benchmark.
 
 \paragraph{Significance for offline medical RL.}
-Offline medical RL learns from logged data with uneven action coverage, and how a
-pipeline handles data-unsupported actions is a consequential design choice that
-survival rate can hide. We make this failure visible and exactly measurable on a
-controlled testbed and package a support-aware diagnostic-and-remedy protocol---a
-methodological caution, not a clinical recommendation.
+Offline medical RL learns from logged data with uneven action coverage, where the
+handling of data-unsupported actions is a consequential design choice that survival
+rate can hide. We make this failure exactly measurable on a controlled testbed and
+package a support-aware diagnostic-and-remedy protocol---a methodological caution,
+not a clinical recommendation.
 
 % =============================================================================
 \section{Limitations}
@@ -606,14 +591,11 @@ mean-imputation, and the benchmark already exposes the support information neede
 diagnose and mitigate it.
 
 % =============================================================================
-\section*{Reproducibility statement}
-All mechanism experiments (baselines, component ablation, penalty sweep, offline
-data-size sweep, expert projection, robustness, dead-ends) are computed from the
-shipped ICU-Sepsis dynamics by exact value iteration and reproduce from the released
-one-command scripts (metric definitions in \S\ref{sec:method}). The cross-algorithm
-and model-based ($5{\times}10^5$) results are obtained by exactly evaluating the
-teammate's committed policies against the true dynamics with the released evaluation
-script, so every number in Table~\ref{tab:merged} is reproducible.
+\paragraph{Reproducibility statement.}
+All mechanism diagnostics reproduce from the released one-command scripts---exact value
+iteration on the shipped ICU-Sepsis dynamics (metric definitions in \S\ref{sec:method});
+the cross-algorithm and model-based results (Table~\ref{tab:merged}) are exact
+evaluations of committed saved policies against the true dynamics with the same script.
 
 % =============================================================================
 \bibliographystyle{plainnat}
