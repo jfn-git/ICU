@@ -358,7 +358,7 @@ components help only marginally: masking only the target leaves $\sim$77\% deplo
 unsupported, and masking only the deployed policy zeroes deployment but leaves the
 $Q$-table corrupted (leakage unchanged at $+0.46$). The $Q$-value leakage flips from $+0.46$ (vanilla) to
 $-0.80$ (behavior/full mask), showing unsupported actions become competitive only
-because they are sampled and updated under mean-imputed dynamics (App.~\ref{fig:exactcurve}
+because they are sampled and updated under mean-imputed dynamics (Fig.~\ref{fig:exactcurve}
 traces the same ordering over training). The sign of the
 leakage is informative: a large \emph{negative} value (e.g.\ CQL $\kappa{=}1$:
 $-2.95$) signals \emph{over}-suppression rather than a better policy, which is why
@@ -403,14 +403,17 @@ Support penalties trace a support--value trade-off: larger $\lambda$ drives depl
 unsupported actions to $0$ (at $\lambda{=}1.0$) but $\dist$ plateaus ($\approx
 0.085$) and is Pareto-dominated by hard masking ($0.069$); CQL-conservatism is the
 best soft remedy ($0.080$) but still trails, with a $\kappa$ sweet spot ($\kappa{=}1$
-helps, $\kappa{=}2$ over-suppresses to $0.089$) (Fig.~\ref{fig:spectrum}).
+helps, $\kappa{=}2$ over-suppresses to $0.089$) (App.~Fig.~\ref{fig:spectrum}).
 
 \begin{figure}[t]\centering
-\includegraphics[width=0.68\linewidth]{penalty_tradeoff.png}
-\caption{Remedy spectrum: the support--value trade-off; larger penalties remove
-unsupported actions but plateau in $\dist$, and hard masking is Pareto-best
-(5 seeds, $5{\times}10^4$ episodes).}
-\label{fig:spectrum}
+\includegraphics[width=0.72\linewidth]{exact_dist_curve.png}
+\caption{Exact learning curves: distance-to-$V^\star$ of each policy snapshot vs.\
+training episodes (5 seeds, $\pm$1 SE), computed exactly against $V^\star$ rather than
+from rollout return. Vanilla plateaus far from optimal; deployment-only masking barely
+improves dist-$V^\star$; CQL-style conservatism helps; full/behavior masking reaches
+the best plateau --- the same ordering as the component ablation
+(Table~\ref{tab:ablation}), now traced over training.}
+\label{fig:exactcurve}
 \end{figure}
 
 \paragraph{Across algorithms and a model-based endpoint ($5{\times}10^5$ episodes).}
@@ -620,19 +623,16 @@ script, so every number in Table~\ref{tab:merged} is reproducible.
 \appendix
 \section{Supplementary figures}
 \label{app:figs}
-This appendix collects the exact dist-$V^\star$ learning curves for the component
-ablation (Fig.~\ref{fig:exactcurve}) and the figures for the supplementary analyses
-of \S\ref{sec:supp} (expert projection, robustness, dead-end structure).
+This appendix collects the penalty-sweep remedy figure (Fig.~\ref{fig:spectrum}) and
+the figures for the supplementary analyses of \S\ref{sec:supp} (expert projection,
+robustness, dead-end structure).
 
 \begin{figure}[t]\centering
-\includegraphics[width=0.72\linewidth]{exact_dist_curve.png}
-\caption{Exact learning curves: distance-to-$V^\star$ of each policy snapshot vs.\
-training episodes (5 seeds, $\pm$1 SE), computed exactly against $V^\star$ rather than
-from rollout return. Vanilla plateaus far from optimal; deployment-only masking barely
-improves dist-$V^\star$; CQL-style conservatism helps; full/behavior masking reaches
-the best plateau --- the same ordering as the component ablation
-(Table~\ref{tab:ablation}), now traced over training.}
-\label{fig:exactcurve}
+\includegraphics[width=0.85\linewidth]{penalty_tradeoff.png}
+\caption{Remedy spectrum (penalty sweep): the support--value trade-off; larger
+penalties remove unsupported actions but plateau in $\dist$, and hard masking is
+Pareto-best (5 seeds, $5{\times}10^4$ episodes).}
+\label{fig:spectrum}
 \end{figure}
 
 \begin{figure}[t]\centering
