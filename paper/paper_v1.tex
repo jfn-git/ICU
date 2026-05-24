@@ -358,7 +358,8 @@ components help only marginally: masking only the target leaves $\sim$77\% deplo
 unsupported, and masking only the deployed policy zeroes deployment but leaves the
 $Q$-table corrupted (leakage unchanged at $+0.46$). The $Q$-value leakage flips from $+0.46$ (vanilla) to
 $-0.80$ (behavior/full mask), showing unsupported actions become competitive only
-because they are sampled and updated under mean-imputed dynamics. The sign of the
+because they are sampled and updated under mean-imputed dynamics (App.~\ref{fig:exactcurve}
+traces the same ordering over training). The sign of the
 leakage is informative: a large \emph{negative} value (e.g.\ CQL $\kappa{=}1$:
 $-2.95$) signals \emph{over}-suppression rather than a better policy, which is why
 CQL ($\dist{=}0.080$) still trails hard masking ($0.069$) despite its strongly
@@ -619,9 +620,20 @@ script, so every number in Table~\ref{tab:merged} is reproducible.
 \appendix
 \section{Supplementary figures}
 \label{app:figs}
-This appendix collects the figures for the supplementary analyses discussed in
-\S\ref{sec:supp} (expert projection, robustness across algorithms and strategies,
-and dead-end structure).
+This appendix collects the exact dist-$V^\star$ learning curves for the component
+ablation (Fig.~\ref{fig:exactcurve}) and the figures for the supplementary analyses
+of \S\ref{sec:supp} (expert projection, robustness, dead-end structure).
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.72\linewidth]{exact_dist_curve.png}
+\caption{Exact learning curves: distance-to-$V^\star$ of each policy snapshot vs.\
+training episodes (5 seeds, $\pm$1 SE), computed exactly against $V^\star$ rather than
+from rollout return. Vanilla plateaus far from optimal; deployment-only masking barely
+improves dist-$V^\star$; CQL-style conservatism helps; full/behavior masking reaches
+the best plateau --- the same ordering as the component ablation
+(Table~\ref{tab:ablation}), now traced over training.}
+\label{fig:exactcurve}
+\end{figure}
 
 \begin{figure}[t]\centering
 \includegraphics[width=0.6\linewidth]{expert_prior_curve.png}
