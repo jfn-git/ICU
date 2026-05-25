@@ -66,7 +66,7 @@ actions in $\sim$87\% of states and reaches $J{=}0.785$, no better than the Rand
 ($J^\star{=}0.875$).
 
 A component ablation localizes the mechanism. Masking unsupported actions only at
-deployment removes invalid deployed actions but leaves the learned $Q$-table
+deployment removes unsupported deployed actions but leaves the learned $Q$-table
 corrupted, with $Q$-value leakage unchanged at $+0.46$. In contrast, restricting
 the behavior policy during training matches the full support mask and reduces the
 value gap from $0.090$ to $0.069$. Additional support-aware remedies---soft
@@ -291,7 +291,11 @@ The cross-algorithm and model-based comparisons in Table~\ref{tab:merged} use
 $5{\times}10^5$ episodes. This larger budget does not explain the main failure:
 vanilla Q-learning remains near the baseline at both budgets
 ($J{=}0.785$ at $5{\times}10^4$ and $J{=}0.787$ at
-$5{\times}10^5$). We report means over 5 seeds; shaded bands in line plots show 95\% confidence
+$5{\times}10^5$). DQN and PPO use one-hot state inputs with linear heads
+(equivalent to tabular $Q$- and policy-tables) and adopt the ICU-Sepsis paper's
+published hyperparameters \citep{choudhary2024icusepsis}; their single-file
+CleanRL-style implementations are in the linked code, and we use them only as
+breadth checks, not tuned deep-RL baselines. We report means over 5 seeds; shaded bands in line plots show 95\% confidence
 intervals across seeds, bar-chart error bars show $\pm$std, and the appendix
 rollout curves use $\pm$1 SE (benchmark convention). Our conclusions rely not on
 small survival-rate differences, but on support diagnostics with large effect
@@ -336,7 +340,7 @@ bootstrapping, but it prevents the learner from consistently recovering the best
 admissible action, inducing a measurable value gap to $V^\star$. This is why
 survival rate alone is not diagnostic: benchmark-style return metrics can look
 plausible while $\dist$ and support-aware diagnostics reveal the hidden failure. The failure is also not specific to Q-learning or to a
-small training budget: it persists across Sarsa/Q/DQN/PPO, and Q-learning remains
+small training budget: it persists across Sarsa, Q-learning, DQN, and PPO, and Q-learning remains
 near the baseline level at $5{\times}10^5$ episodes ($J{=}0.787$ exact;
 Table~\ref{tab:merged}).
 
@@ -566,8 +570,8 @@ SAC, and the DQN/PPO agents we include remain confined to the small discrete
 ICU-Sepsis benchmark. The offline empirical-MDP sweep is a step toward the
 realistic finite-data regime but remains tabular. We use 5 seeds (effect
 sizes for the support diagnostics are large, e.g.\ 87\%$\to$0\% deployed unsupported
-and leakage $+0.46\to-0.80$). The clinician policy itself is not fully
-admissibility-respecting, a property of the benchmark we inherit.
+and leakage $+0.46\to-0.80$). The benchmark clinician policy is inherited as a
+reference policy and is not designed as an admissibility-control method.
 
 % =============================================================================
 \section{Conclusion}
