@@ -13,7 +13,8 @@
 % submission mode (do NOT pass [final]) auto-prints "Anonymous Author(s)" and
 % enables line numbers. The six PNGs live in submission/figures/ (graphicspath
 % below also looks in ./figures/).
-% ANONYMITY: no names / affiliations / real repo URLs anywhere.
+% ANONYMITY: no names / affiliations in the PDF. A code repository URL is included
+% in the Reproducibility statement (this is a non-anonymous course mini-conf).
 % =============================================================================
 \documentclass{article}
 \usepackage{neurips_2026}    
@@ -34,7 +35,7 @@
 % Self-contained: all figures live in ./figures/ (this folder).
 \graphicspath{{figures/}}
 
-\newcommand{\Adm}{\mathcal{A}}
+\newcommand{\Adm}{\mathcal{A}_{\mathrm{adm}}}
 \newcommand{\dist}{\mathrm{dist}\text{-}V^\star}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
@@ -268,7 +269,8 @@ We also include softer support-aware remedies as supporting comparisons. A
 $r'(s,a,s')=r-\lambda\mathbb{1}[a\notin\Adm(s)]$. A \emph{CQL-style} tabular
 regularizer nudges $Q(s,\cdot)$ toward the admissible support: at each visited
 state it sets $Q(s,\cdot)\leftarrow Q(s,\cdot)-\alpha\kappa\big(\mathrm{softmax}(Q(s,\cdot))-u_{\Adm(s)}\big)$,
-where $u_{\Adm(s)}$ is uniform over $\Adm(s)$. This is not a full CQL
+where $u_{\Adm(s)}$ is the distribution over all actions that is uniform on
+$\Adm(s)$ and zero elsewhere. This is not a full CQL
 implementation, but a conservative value-suppression test used only in tabular
 $Q$-learning. Throughout, the
 \emph{admissibility-aware} (AA) prefix denotes a learner whose admissible-action
@@ -436,8 +438,10 @@ an artifact of mean-imputation and unsupported-action handling.
 for $5{\times}10^5$ episodes over 5 seeds and re-evaluated against the true
 benchmark dynamics by exact value iteration to obtain $V^\pi$. Exact $J(\pi)$ is
 reported as mean${\pm}$std for trained policies; $\dist$ is the exact
-$d_0$-weighted value gap to $V^\star$; and ``Deploy unsupp.'' is the
-deployed-state inadmissible-action rate.}
+$d_0$-weighted value gap to $V^\star$; and ``Deploy unsupp.'' is the mean
+unweighted fraction of non-terminal states in which the greedy deployed policy
+selects $a\notin\Adm(s)$ (dashes mark reference policies for which it is not
+reported).}
 \label{tab:merged}
 \begin{tabular}{llccc}
 \toprule
@@ -471,7 +475,8 @@ denotes the number of one-step transitions $(s_t,a_t,r_t,s_{t+1})$ sampled under
 the clinician behavior policy. For each $N$, we build a certainty-equivalent
 empirical model by treating the sampled transition frequencies as the MDP
 dynamics, and compare three offline planners: \emph{naive} value iteration
-with mean-imputation for unseen actions, \emph{pessimistic} VI-LCB
+with mean-imputation for actions unobserved in the $N$-sample dataset,
+\emph{pessimistic} VI-LCB
 \citep{jin2021pessimism,rashidinejad2021pessimism}, and
 \emph{admissibility-masked} value iteration. All learned policies are evaluated
 exactly against the true benchmark dynamics (Fig.~\ref{fig:offline}).
@@ -505,8 +510,9 @@ against the true $V^\star$.}
 \label{sec:supp}
 
 We move additional robustness checks to Appendix~\ref{app:figs} to keep the main
-text focused on the mechanism. In brief, projecting the clinician prior onto
-$\Adm(s)$ removes most unsupported deployment while preserving value; the failure
+text focused on the mechanism. In brief, projecting the benchmark clinician policy, treated as a state-dependent
+prior $\pi_E(a\mid s)$, onto $\Adm(s)$ removes most unsupported deployment while
+preserving value; the failure
 is specific to the \texttt{mean} strategy rather than the \texttt{terminate}
 strategy; and ICU-Sepsis has no dead-end states
 \citep{fatemi2021deadends} under the exact model. These checks are supportive
@@ -581,6 +587,8 @@ All mechanism diagnostics reproduce from the released one-command scripts---exac
 iteration on the shipped ICU-Sepsis dynamics (metric definitions in \S\ref{sec:method});
 the cross-algorithm and model-based results (Table~\ref{tab:merged}) are exact
 evaluations of the saved policies against the true dynamics with the same script.
+Code and saved policies are available at
+\url{https://github.com/jfn-git/icu-sepsis-ood-supplement}.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
