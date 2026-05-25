@@ -53,8 +53,8 @@ Failure Mode in the ICU-Sepsis Benchmark}
 \maketitle
 
 \begin{abstract}
-ICU-Sepsis exposes a rare opportunity to audit offline-RL action-support failures
-exactly: although it is distilled from real ICU trajectories, it ships tabular
+ICU-Sepsis exposes a rare opportunity to audit action-support failures relevant
+to offline RL: although it is distilled from real ICU trajectories, it ships tabular
 dynamics and therefore allows exact evaluation against the optimal value
 $V^\star$. We use this property to test the benchmark's default \texttt{mean}
 imputation rule, which replaces every data-unsupported action with the average
@@ -122,6 +122,11 @@ decisive intervention is instead \emph{behavior-level} support control:
 unsupported actions must be kept out of the training behavior that is sampled and
 bootstrapped. This behavior-only mask matches the full support mask and improves
 the exact value gap to $V^\star$ from $0.090$ to $0.069$.
+
+Methodologically, the mechanism study (\S\ref{sec:failure}--\S\ref{sec:remedy})
+uses the released MDP as a controlled white-box diagnostic; \S\ref{sec:offline}
+adds a fixed finite-data offline test, and behavior-level masking localizes
+\emph{where} the failure enters learning rather than altering logged data.
 
 \paragraph{Contributions.}
 \begin{enumerate}[leftmargin=2em,itemsep=2pt,topsep=2pt]
@@ -284,6 +289,9 @@ model structure, not as a proposed algorithm or a fair model-free comparison.
 \section{Experiments}
 \label{sec:experiments}
 \paragraph{Setup.}
+The mechanism-diagnosis experiments treat the released tabular MDP as a controlled
+diagnostic simulator---online only in the methodological sense of probing its
+dynamics, not a deployable offline clinical training protocol.
 Unless stated otherwise, mechanism experiments use 5 seeds,
 $5{\times}10^4$ episodes, $\alpha{=}0.1$, $\gamma{=}1$, and
 $\epsilon$ annealed from $1.0$ to $0.05$ over $10^4$ episodes.
@@ -543,7 +551,10 @@ transferable lesson is therefore not that admissibility masking is a deployable
 clinical policy, but that data-unsupported actions should be handled explicitly
 and pessimistically rather than silently mean-imputed. The finite-data offline
 study reinforces this point: naive mean imputation overestimates its own value,
-whereas pessimism and masking remain calibrated.
+whereas pessimism and masking remain calibrated. In a fixed offline dataset, the
+analogous intervention is not to alter past behavior but to encode action support
+and keep unsupported actions out of planning, bootstrapping, and policy selection
+(via masking, pessimism, or conservative penalties).
 
 \paragraph{Benchmark guidance.}
 Future ICU-Sepsis reports should make action-support handling explicit. At minimum,
