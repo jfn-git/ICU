@@ -357,9 +357,8 @@ does not repair the learned values, leaving leakage unchanged at $+0.46$.
 The leakage diagnostic explains why. $Q$-value leakage flips from $+0.46$ under
 vanilla Q-learning to $-0.80$ under behavior/full masking, showing that
 unsupported actions become competitive only when they are sampled and updated
-under mean-imputed dynamics; Fig.~\ref{fig:ablation} (right) traces this leakage
-over training, and the exact learning curves show the same method ordering
-(Fig.~\ref{fig:exactcurve}). We return to this sign interpretation in the remedy spectrum,
+under mean-imputed dynamics. Fig.~\ref{fig:exactcurve} traces the same ordering
+over training. We return to this sign interpretation in the remedy spectrum,
 where overly negative leakage can indicate conservative over-suppression rather
 than better value (\S\ref{sec:remedy}). The central mechanism result is therefore not that
 unsupported actions should merely be suppressed, but that support must be
