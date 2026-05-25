@@ -205,7 +205,10 @@ episodes are short and the undiscounted return equals the survival probability;
 consequently $V^\star(s)$ is exactly the maximum achievable survival probability
 from $s$. Because the full transition model is shipped with the benchmark, we
 compute $V^\star$ and the exact value $V^\pi$ of any policy by value iteration,
-avoiding off-policy estimation entirely.
+avoiding off-policy estimation entirely. We write $d_0$ for the benchmark's
+initial-state distribution and summarize a policy by its $d_0$-weighted value
+$J(\pi)=\mathbb{E}_{s\sim d_0}[V^\pi(s)]$ (the survival probability), with
+$J^\star=\mathbb{E}_{s\sim d_0}[V^\star(s)]$ the optimal value.
 
 \paragraph{Admissibility and the \texttt{mean} strategy.}
 Each state has an \emph{admissible} action set $\Adm(s)$: actions taken at least
@@ -263,8 +266,11 @@ comes from training-time sampling, bootstrapping, or final deployment.
 We also include softer support-aware remedies as supporting comparisons. A
 \emph{support penalty} subtracts $\lambda$ when an inadmissible action is sampled,
 $r'(s,a,s')=r-\lambda\mathbb{1}[a\notin\Adm(s)]$. A \emph{CQL-style} tabular
-regularizer nudges $Q(s,\cdot)$ toward the admissible support; this is not a full
-CQL implementation, but a conservative value-suppression test. Throughout, the
+regularizer nudges $Q(s,\cdot)$ toward the admissible support: at each visited
+state it sets $Q(s,\cdot)\leftarrow Q(s,\cdot)-\alpha\kappa\big(\mathrm{softmax}(Q(s,\cdot))-u_{\Adm(s)}\big)$,
+where $u_{\Adm(s)}$ is uniform over $\Adm(s)$. This is not a full CQL
+implementation, but a conservative value-suppression test used only in tabular
+$Q$-learning. Throughout, the
 \emph{admissibility-aware} (AA) prefix denotes a learner whose admissible-action
 mask is applied during learning (the AA-$\ast$ methods in Table~\ref{tab:merged}).
 Finally, AA-MBRL serves as a model-based endpoint: it estimates an empirical transition
@@ -283,9 +289,11 @@ The cross-algorithm and model-based comparisons in Table~\ref{tab:merged} use
 $5{\times}10^5$ episodes. This larger budget does not explain the main failure:
 vanilla Q-learning remains near the baseline at both budgets
 ($J{=}0.785$ at $5{\times}10^4$ and $J{=}0.787$ at
-$5{\times}10^5$). We report means over 5 seeds and show 95\% confidence
-intervals in the figures; our conclusions rely not on small survival-rate
-differences, but on support diagnostics with large effect sizes.
+$5{\times}10^5$). We report means over 5 seeds; shaded bands in line plots show 95\% confidence
+intervals across seeds, bar-chart error bars show $\pm$std, and the appendix
+rollout curves use $\pm$1 SE (benchmark convention). Our conclusions rely not on
+small survival-rate differences, but on support diagnostics with large effect
+sizes.
 
 \paragraph{Baselines reproduce the benchmark (Table~\ref{tab:baselines}).}
 Exact $d_0$-weighted values match the published Random/Expert/Optimal numbers,
@@ -545,10 +553,12 @@ caution and an evaluation protocol, not a clinical recommendation.
 \label{sec:limitations}
 Our study is benchmark-internal and tabular: ``unsupported'' means insufficient data
 support, not medical incorrectness, and we make no clinical claims. Whether the
-mean-imputation failure and the behavior-masking fix transfer to function-approximation
-/ continuous / deep settings is untested; in particular we do not evaluate SAC or
-genuinely deep/continuous agents, and the offline empirical-MDP sweep is a step
-toward the realistic finite-data regime but remains tabular. We use 5 seeds (effect
+mean-imputation failure and the behavior-masking fix transfer to high-dimensional,
+continuous-action, or clinically realistic function-approximation settings is
+untested; in particular we do not evaluate continuous-control algorithms such as
+SAC, and the DQN/PPO agents we include remain confined to the small discrete
+ICU-Sepsis benchmark. The offline empirical-MDP sweep is a step toward the
+realistic finite-data regime but remains tabular. We use 5 seeds (effect
 sizes for the support diagnostics are large, e.g.\ 87\%$\to$0\% deployed unsupported
 and leakage $+0.46\to-0.80$). The clinician policy itself is not fully
 admissibility-respecting, a property of the benchmark we inherit.
@@ -613,6 +623,17 @@ error bars show $\pm$std).}
 \label{fig:spectrum}
 \end{figure}
 
+\paragraph{Expert projection (Fig.~\ref{fig:expert}).}
+For the expert-projection check we treat the benchmark clinician policy as a
+state-dependent prior $\pi_E(a\mid s)$ and guide exploration with its
+admissibility-projected form
+\[
+\pi_E^{\Adm}(a\mid s)=\frac{\pi_E(a\mid s)\,\mathbf{1}\{a\in\Adm(s)\}}
+{\sum_{a'\in\Adm(s)}\pi_E(a'\mid s)},
+\]
+so exploration never injects unsupported actions. This is a supplementary
+diagnostic, not a proposed clinical policy.
+
 \begin{figure}[H]\centering
 \includegraphics[width=0.6\linewidth]{expert_prior_curve.png}
 \caption{Expert-guided exploration. Projecting the clinician prior onto
@@ -626,7 +647,7 @@ bands show 95\% CI).}
 \begin{figure}[H]\centering
 \includegraphics[width=0.95\linewidth]{robustness.png}
 \caption{Robustness across tabular TD algorithms and imputation strategies,
-exactly evaluated by distance-to-$V^\star$. Across Q-learning, SARSA, and
+exactly evaluated by distance-to-$V^\star$. Across Q-learning, Sarsa, and
 Dyna-Q, full masking improves or matches vanilla under both the \texttt{mean}
 and \texttt{terminate} strategies. Numbers above red bars report the deployed
 unsupported-action rate of vanilla. Results use 5 seeds and
