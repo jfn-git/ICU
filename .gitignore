@@ -38,3 +38,6 @@ desktop.ini
 
 # --- Local scratch (uncomment if you don't want to publish run logs) ---
 # logs/
+
+# --- Build artifacts / submission bundles ---
+*.zip

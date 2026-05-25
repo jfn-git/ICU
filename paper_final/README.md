@@ -32,13 +32,21 @@ Then **Recompile ×2** (bibtex + label/figure-number settling).
   the references/appendix and does **not** count toward the page limit. The course
   does not strictly require it, but a filled checklist is included for completeness.
 
-## ⚠️ Two checklist answers to verify before submitting
-- **Q5 (Open access to data and code)** is set to `\answerYes` and states an
-  anonymized code supplement is provided. If you will *not* upload an anonymized
-  code zip, change it to `\answerNo` (and update the justification) — do not leave
-  Yes without attaching code.
-- **Q8 (Compute resources)** states "single commodity CPU, no GPU, tabular." If
-  DQN/PPO were actually trained on a GPU, edit the justification.
+## Checklist answers (finalized)
+- **Q5 (Open access to data and code)** = `\answerYes`: an anonymized code archive
+  (`supplementary_code.zip`, repo root) is attached as supplementary material; upload
+  it alongside the PDF on OpenReview.
+- **Q8 (Compute resources)** = `\answerYes`: tabular parts run on CPU; the deep
+  baselines (DQN/PPO) were trained on a single consumer GPU.
+- **Q16 (LLM usage)** = `\answerNA`: LLMs are not a core method component.
+- All other answers are filled per the paper (see `checklist.tex`).
+
+## Supplementary code archive
+`supplementary_code.zip` (repo root) is the anonymized reproducibility supplement:
+`src/`, `scripts/`, `configs/`, `tests/`, `requirements.txt`, and an English README.
+It excludes caches, internal planning docs, outputs, and the third-party ICU-Sepsis
+package (install from its public repo per the archive's README). Scanned for identity
+leaks (no names/emails/personal repo URLs).
 
 ## Page check
 Target: main content through the Reproducibility statement ≤ 8 pages, so **References

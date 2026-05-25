@@ -67,7 +67,7 @@
 \item {\bf Open access to data and code}
     \item[] Question: Does the paper provide open access to the data and code, with sufficient instructions to faithfully reproduce the main experimental results, as described in supplemental material?
     \item[] Answer: \answerYes{}
-    \item[] Justification: All experiments use the publicly available ICU-Sepsis benchmark, and the diagnostics reproduce from the released one-command scripts described in the Reproducibility statement; an anonymized copy of the code is provided as supplementary material with this submission.
+    \item[] Justification: All experiments use the publicly available ICU-Sepsis benchmark, and an anonymized copy of the analysis/evaluation code---with a README and the exact commands to run each experiment---is provided as supplementary material. The diagnostics reproduce from these scripts together with the exact value-iteration procedure and metric definitions described in Section~\ref{sec:method} and the Reproducibility statement.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that paper does not include experiments requiring code.
@@ -95,7 +95,7 @@
 \item {\bf Experiment statistical significance}
     \item[] Question: Does the paper report error bars suitably and correctly defined or other appropriate information about the statistical significance of the experiments?
     \item[] Answer: \answerYes{}
-    \item[] Justification: Results use 5 seeds and report mean$\pm$std or $\pm1$ standard error (e.g., Tables~\ref{tab:ablation} and~\ref{tab:merged}, and Figures~\ref{fig:exactcurve} and~\ref{fig:offline}); the masking effect on the benchmark rollout metric is additionally reported with significance ($p\le0.013$ on the three stronger baselines).
+    \item[] Justification: Results use 5 seeds; the figures show 95\% confidence intervals (e.g., Figures~\ref{fig:exactcurve} and~\ref{fig:offline}) and the tables report seed means, with per-seed standard deviations in the released logs; the masking effect on the benchmark rollout metric is additionally reported with significance ($p\le0.013$ on the three stronger baselines).
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper does not include experiments.
@@ -112,7 +112,7 @@
 \item {\bf Experiments compute resources}
     \item[] Question: For each experiment, does the paper provide sufficient information on the computer resources (type of compute workers, memory, time of execution) needed to reproduce the experiments?
     \item[] Answer: \answerYes{}
-    \item[] Justification: All experiments are small tabular computations over the 716-state ICU-Sepsis MDP---exact value iteration and tabular/lightweight agents---and run on a single commodity CPU without GPUs.
+    \item[] Justification: The mechanism experiments are small tabular computations over the 716-state ICU-Sepsis MDP (exact value iteration and tabular agents) and run on a single commodity CPU; the deep baselines (DQN and PPO) were trained on a single consumer GPU. Total compute is modest given the small state space.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper does not include experiments.
@@ -178,7 +178,7 @@
 \item {\bf New assets}
     \item[] Question: Are new assets introduced in the paper well documented and is the documentation provided alongside the assets?
     \item[] Answer: \answerNA{}
-    \item[] Justification: The paper introduces no new released datasets or models; the only artifact is the analysis/evaluation code, whose usage is documented in the Reproducibility statement and the accompanying anonymized supplement.
+    \item[] Justification: The paper introduces no new released datasets or models. The analysis/evaluation code is provided as an anonymized supplementary archive with a README documenting setup and the exact commands to reproduce each experiment.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper does not release new assets.
