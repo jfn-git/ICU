@@ -237,7 +237,7 @@ is the fraction of non-terminal states in which the greedy policy selects
 $a\notin\Adm(s)$. Third, $Q$-value leakage measures whether unsupported actions
 are over-valued in the learned table:
 \[
-\frac{1}{|\mathcal{S}_{\mathrm{nt}}|}\sum_s
+\frac{1}{|\mathcal{S}_{\mathrm{nt}}|}\sum_{s\in\mathcal{S}_{\mathrm{nt}}}
 \left[\max_{a\notin\Adm(s)}Q(s,a)-\max_{a\in\Adm(s)}Q(s,a)\right].
 \]
 Positive leakage means unsupported actions are valued above the best supported
@@ -257,8 +257,10 @@ We also include softer support-aware remedies as supporting comparisons. A
 \emph{support penalty} subtracts $\lambda$ when an inadmissible action is sampled,
 $r'(s,a,s')=r-\lambda\mathbb{1}[a\notin\Adm(s)]$. A \emph{CQL-style} tabular
 regularizer nudges $Q(s,\cdot)$ toward the admissible support; this is not a full
-CQL implementation, but a conservative value-suppression test. Finally,
-AA-MBRL serves as a model-based endpoint: it estimates an empirical transition
+CQL implementation, but a conservative value-suppression test. Throughout, the
+\emph{admissibility-aware} (AA) prefix denotes a learner whose admissible-action
+mask is applied during learning (the AA-$\ast$ methods in Table~\ref{tab:merged}).
+Finally, AA-MBRL serves as a model-based endpoint: it estimates an empirical transition
 model and periodically solves value iteration restricted to $\Adm(s)$. We use
 AA-MBRL only to show that the gap is largely an artifact of ignoring support and
 model structure, not as a proposed algorithm or a fair model-free comparison.
@@ -273,9 +275,9 @@ $1.0{\to}0.05$ over $10^4$ episodes. The cross-algorithm and model-based results
 episode budget}, and the two budgets are bridged by the fact that vanilla
 Q-learning stays at the baseline level at both ($J{=}0.785$ at $5{\times}10^4$;
 $0.787$ exact at $5{\times}10^5$, Table~\ref{tab:merged}), so the failure is not
-under-training. We report mean $\pm$ std (per-seed scatter in the
-appendix); we do not rest conclusions on small survival differences but on
-large-support diagnostics.
+under-training. We report means over 5 seeds and show 95\% confidence
+intervals in the figures; we do not rest conclusions on small survival
+differences but on large-support diagnostics.
 
 \paragraph{Baselines reproduce the benchmark (Table~\ref{tab:baselines}).}
 Exact $d_0$-weighted values match the published Random/Expert/Optimal numbers,
@@ -343,7 +345,7 @@ vanilla            & 0.090 & 0.87 & $+0.46$ & unsupported over-valued \\
 target-only        & 0.085 & 0.77 & $+0.07$ & backup alone insufficient \\
 policy-only        & 0.083 & 0.00 & $+0.46$ & band-aid; $Q$ corrupted \\
 CQL ($\kappa{=}1$) & 0.080 & 0.00 & $-2.95$ & best \emph{soft} remedy \\
-\textbf{behavior-only} & \textbf{0.069} & 0.00 & $-0.80$ & necessary \& sufficient \\
+\textbf{behavior-only} & \textbf{0.069} & 0.00 & $-0.80$ & matches full mask \\
 full mask          & 0.069 & 0.00 & $-0.80$ & $=$ behavior-only \\
 \bottomrule
 \end{tabular}
@@ -356,7 +358,7 @@ full mask          & 0.069 & 0.00 & $-0.80$ & $=$ behavior-only \\
 $Q$-value-leakage mechanism (right): masking \emph{behavior} matches the full mask
 and is the only component that clears the corruption, while masking only the target
 or only the deployed policy does not; leakage flips from $+0.46$ to $-0.80$
-(5 seeds, $5{\times}10^4$ episodes).}
+(5 seeds, $5{\times}10^4$ episodes; left bars: $\pm$std, right bands: 95\% CI).}
 \label{fig:ablation}
 \end{figure}
 
@@ -372,7 +374,7 @@ helps, $\kappa{=}2$ over-suppresses to $0.089$) (App.~Fig.~\ref{fig:spectrum}).
 \begin{figure}[tb]\centering
 \includegraphics[width=0.60\linewidth]{exact_dist_curve.png}
 \caption{Exact learning curves: distance-to-$V^\star$ of each policy snapshot vs.\
-training episodes (5 seeds, $\pm$1 SE), computed exactly against $V^\star$ rather than
+training episodes (5 seeds, 95\% CI), computed exactly against $V^\star$ rather than
 from rollout return. Vanilla plateaus far from optimal; deployment-only masking barely
 improves dist-$V^\star$; CQL-style conservatism helps; full/behavior masking reaches
 the best plateau --- the same ordering as the component ablation
@@ -383,14 +385,19 @@ the best plateau --- the same ordering as the component ablation
 \paragraph{Across algorithms and a model-based endpoint ($5{\times}10^5$ episodes).}
 Table~\ref{tab:merged} reports the cross-algorithm picture, evaluated \emph{exactly}.
 Admissibility masking improves every baseline---strictly positive on all four and
-larger for the stronger baselines: exact $\dist$ gains of $+0.013$ (Sarsa), $+0.014$
-(Q-learning), $+0.027$ (DQN), and $+0.027$ (PPO).\footnote{Policies are from the
+larger for the stronger baselines: exact $\dist$ gains of $+0.014$ (Sarsa), $+0.014$
+(Q-learning), $+0.026$ (DQN), and $+0.027$ (PPO).\footnote{Policies are from the
 released experimental pipeline; we re-evaluate each exactly against the true dynamics, so every trained value is $\le V^\star$. On the benchmark's rollout
 metric the same masking effect is significant ($p\le0.013$) on the three stronger
-baselines.} At the model-based endpoint, AA-MBRL reaches exact $J{=}0.874$ (gap
-$0.001$). We read this not as ``winning'' but as confirmation that the gap is an
-artifact of mean-imputation: even the most naive use of the shipped model structure
-nearly closes it, and on a $716$-state tabular MDP a model-based agent reaching
+baselines.} The model-based endpoint is itself a cautionary example of why we
+evaluate exactly: the naive admissibility-aware model-based agent (AA-MBRL, P1$+$P2)
+attains a near-oracle \emph{rollout} return ($0.874$) yet an exact $J$ of only
+$0.803$ (gap $0.072$) --- no better than masked $Q$-learning --- because its
+optimism-driven policy is over-valued under mean-imputed dynamics. Only once an
+expert (KL-to-clinician) prior is added does the model-based agent (AA-MBRL-KL) reach
+exact $J{=}0.874$ (gap $0.001$). We read this not as ``winning'' but as confirmation
+that the gap is an artifact of mean-imputation that the shipped model structure, used
+carefully, can close; on a $716$-state tabular MDP a model-based agent reaching
 $V^\star$ is expected \citep{auer2008ucrl,osband2013psrl}.
 
 \begin{table}[t]
@@ -401,9 +408,16 @@ re-evaluate each saved policy exactly against the true dynamics ($V^\pi$ by valu
 iteration), on the same exact axis as the rest of the paper, so every trained value is
 $\le V^\star$ --- unlike the benchmark's rollout metric, under which some near-optimal
 cells spuriously exceed it. ``Deploy unsupp.'' is the deployed-state inadmissible-action
-rate. The model-based endpoint AA-MBRL uses an online empirical model and is
-\emph{not} a fair model-free comparison---supporting breadth showing the gap is an
-artifact of ignoring support/model structure, not a headline result.}
+rate. Exact $J(\pi)$ is shown as mean${\pm}$std over 5 seeds. Row groups denote the
+structural \emph{priors} added to the base learner: \emph{P1} $=$ admissibility
+prior (support mask; the AA-$\ast$ methods), \emph{P2} $=$ model prior
+(empirical-model planning), and \emph{P4} $=$ expert prior (KL-to-clinician).
+Note the model-based contrast: naive AA-MBRL (P1$+$P2) attains a near-oracle
+\emph{rollout} return ($0.874$) but an exact $J$ of only $0.803$; only the
+expert-regularized AA-MBRL-KL closes the gap exactly. AA-MBRL variants use an
+online empirical model and are \emph{not} fair model-free comparisons---they are
+breadth showing the gap is an artifact of ignoring support/model structure, not a
+headline result.}
 \label{tab:merged}
 \begin{tabular}{llccc}
 \toprule
@@ -413,17 +427,19 @@ Reference & Random            & 0.780 & 0.095 & --- \\
           & Clinician         & 0.782 & 0.093 & --- \\
           & Optimal $V^\star$ & 0.875 & 0.000 & --- \\
 \midrule
-No prior  & Sarsa       & 0.789 & 0.087 & 0.83 \\
-          & Q-learning  & 0.787 & 0.088 & 0.85 \\
-          & DQN         & 0.799 & 0.076 & 0.79 \\
-          & PPO         & 0.842 & 0.033 & 0.58 \\
+No prior  & Sarsa       & $0.788{\pm}0.002$ & 0.087 & 0.83 \\
+          & Q-learning  & $0.787{\pm}0.002$ & 0.088 & 0.85 \\
+          & DQN         & $0.799{\pm}0.002$ & 0.076 & 0.79 \\
+          & PPO         & $0.842{\pm}0.001$ & 0.033 & 0.58 \\
 \midrule
-$+$P1 mask & AA-Sarsa   & 0.802 & 0.073 & 0.00 \\
-          & AA-Q        & 0.801 & 0.074 & 0.00 \\
-          & AA-DQN      & 0.826 & 0.050 & 0.00 \\
-          & AA-PPO      & 0.869 & 0.006 & 0.00 \\
+$+$P1 mask & AA-Sarsa   & $0.802{\pm}0.003$ & 0.073 & 0.00 \\
+          & AA-Q        & $0.801{\pm}0.003$ & 0.074 & 0.00 \\
+          & AA-DQN      & $0.826{\pm}0.003$ & 0.050 & 0.00 \\
+          & AA-PPO      & $0.869{\pm}0.001$ & 0.006 & 0.00 \\
 \midrule
-$+$P1$+$P2 & AA-MBRL    & 0.874 & 0.001 & 0.00 \\
+$+$P1$+$P2 & AA-MBRL (UCB) & $0.803{\pm}0.002$ & 0.072 & 0.00 \\
+\midrule
+$+$P1$+$P2$+$P4 & AA-MBRL-KL & $0.874{\pm}0.000$ & 0.001 & 0.00 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -449,7 +465,7 @@ impossible in healthcare RL \citep{gottesman2019guidelines}.
 \includegraphics[width=0.95\linewidth]{offline_datasize.png}
 \caption{Offline empirical-MDP sweep: naive mean-imputation overestimates its own
 value and stagnates, while pessimism and masking are calibrated and improve with
-data (5 seeds; exact evaluation against $V^\star$).}
+data (5 seeds, 95\% CI; exact evaluation against $V^\star$).}
 \label{fig:offline}
 \end{figure}
 
@@ -459,7 +475,7 @@ We move the remaining defenses and robustness checks to Appendix~\ref{app:figs} 
 keep the main text focused on the mechanism. In brief, projecting the clinician
 prior onto $\Adm(s)$ removes most unsupported deployment while preserving value;
 the failure is specific to the \texttt{mean} strategy rather than the
-\texttt{terminate} strategy; ICU-Sepsis has no dead-end states under the exact
+\texttt{terminate} strategy; ICU-Sepsis has no dead-end states \citep{fatemi2021deadends} under the exact
 model; and severity or clinician-prior composition does not materially change the
 main conclusion under exact evaluation. These checks support, but are not needed
 for, the central claim that behavior-level support control is the load-bearing
