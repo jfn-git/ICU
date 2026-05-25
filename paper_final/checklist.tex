@@ -17,7 +17,7 @@
 \item {\bf Limitations}
     \item[] Question: Does the paper discuss the limitations of the work performed by the authors?
     \item[] Answer: \answerYes{}
-    \item[] Justification: Section~\ref{sec:limitations} discusses the benchmark-internal and tabular scope, the untested transfer to function-approximation/continuous/deep settings, the 5-seed budget, and the fact that the clinician policy itself is not fully admissibility-respecting.
+    \item[] Justification: Section~\ref{sec:limitations} discusses the benchmark-internal and tabular scope, the untested transfer to function-approximation/continuous/deep settings, the 5-seed budget, and the fact that the benchmark clinician policy is inherited only as a reference policy rather than as an admissibility-control method.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper has no limitation while the answer \answerNo{} means that the paper has limitations, but those are not discussed in the paper.
@@ -162,7 +162,7 @@
 \item {\bf Licenses for existing assets}
     \item[] Question: Are the creators or original owners of assets (e.g., code, data, models), used in the paper, properly credited and are the license and terms of use explicitly mentioned and properly respected?
     \item[] Answer: \answerYes{}
-    \item[] Justification: The ICU-Sepsis benchmark~\citep{choudhary2024icusepsis} and the libraries used (e.g., Stable-Baselines3~\citep{raffin2021sb3}) are cited, and the benchmark is used under its public release in accordance with its terms.
+    \item[] Justification: The ICU-Sepsis benchmark~\citep{choudhary2024icusepsis} is properly credited and used under its public release in accordance with its terms; the cross-algorithm agents are single-file CleanRL-style implementations rather than an external RL library, and other tools referenced in the paper (e.g., maskable policies~\citep{raffin2021sb3}) are cited where discussed.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper does not use existing assets.
