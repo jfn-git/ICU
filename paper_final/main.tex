@@ -123,11 +123,6 @@ unsupported actions must be kept out of the training behavior that is sampled an
 bootstrapped. This behavior-only mask matches the full support mask and improves
 the exact value gap to $V^\star$ from $0.090$ to $0.069$.
 
-Methodologically, the mechanism study (\S\ref{sec:failure}--\S\ref{sec:remedy})
-uses the released MDP as a controlled white-box diagnostic; \S\ref{sec:offline}
-adds a fixed finite-data offline test, and behavior-level masking localizes
-\emph{where} the failure enters learning rather than altering logged data.
-
 \paragraph{Contributions.}
 \begin{enumerate}[leftmargin=2em,itemsep=2pt,topsep=2pt]
   \item \textbf{A hidden benchmark failure.} We show that ICU-Sepsis's default
