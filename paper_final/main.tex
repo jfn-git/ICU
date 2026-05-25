@@ -53,8 +53,9 @@ Failure Mode in the ICU-Sepsis Benchmark}
 \maketitle
 
 \begin{abstract}
-ICU-Sepsis exposes a rare opportunity to audit action-support failures relevant
-to offline RL: although it is distilled from real ICU trajectories, it ships tabular
+ICU-Sepsis exposes a rare opportunity to exactly audit a benchmark-level
+action-support failure mode in offline medical RL: although it is distilled from
+real ICU trajectories, it ships tabular
 dynamics and therefore allows exact evaluation against the optimal value
 $V^\star$. We use this property to test the benchmark's default \texttt{mean}
 imputation rule, which replaces every data-unsupported action with the average
